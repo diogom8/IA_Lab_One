@@ -43,11 +43,11 @@ def printlab(lab, w, h):
                         print labdecode(lab[line][column]),'\t',
                 print '\n'        
 
-# searches for agent's initial position
-def search_ipos(lab, w, h):
+# searches for target's initial position (could be agent, finnish, etc.)
+def search_ipos(lab, w, h, target):
         for line in range(0,h):
                 for column in range(0,w):
-                        if lab[line][column] == 2:
+                        if lab[line][column] == target:
                                 return [line, column]         
         
 # Successor function: given a node, returns the set of child nodes
@@ -67,7 +67,7 @@ def successor(lab, x, y, w, h):
                         children.append('P')
         return children        
 
-def getnewpos(lab, movement, x, y):
+def getnewpos(movement, x, y):
         if movement == 'U':
                 return [x-1, y]
         if movement == 'R':
@@ -88,7 +88,7 @@ def open_door(labaux, switch, w, h):
                         # open door
                         labaux[l][row.index(door)]+=100
                         break
-        return labaux
+        
 # Checks if door correspondent to given switch is closed
 def isclosed(lab, switch):
         door = switch + 100
@@ -112,54 +112,71 @@ with open(filename) as f:
 printlab(lab, w, h)
 
 # init paths list
-[x, y] = search_ipos(lab, w, h)
+[x, y] = search_ipos(lab, w, h, 2) # look for agent
+[xfinnish, yfinnish] = search_ipos(lab, w, h, 3) # look for finnish
 
 isuccessors = successor(lab, x, y, w, h)
 
 for i in range(0, len(isuccessors)):
-        [newx, newy] = getnewpos(lab, isuccessors[i], x, y)
+        [newx, newy] = getnewpos(isuccessors[i], x, y)
         auxpath = path(isuccessors[i], newx, newy, x, y, lab)
         paths.append(auxpath)
 
 # do the search
-# TODO: DO NOT LET PRESS TWICE IN A ROW
 depth = 0
-while(paths!=[]):
+solved = 0
+while not solved:
         index2rem = []
         depth = depth+1
-        ilenpaths = len(paths) # because paths length changes while iterating
-        for i in range(0, ilenpaths):
+        for i in range(0, len(paths)):
+                # save elements
                 name = paths[i].name
                 x = paths[i].x
                 y = paths[i].y
                 prevx = paths[i].prevx
                 prevy = paths[i].prevy
-                lab = paths[i].lab
+                lab = [list(a) for a in paths[i].lab]
+                # search for possible movements
                 succ = successor(lab, x, y, w, h)
                 for j in range(0, len(succ)):
-                        [newx, newy] = getnewpos(lab, succ[j], x, y)
-                        if newx != prevx or newy != prevy:
-                                if len(paths[i].name) == depth:
-                                        paths[i].name += succ[j]
-                                        paths[i].prevx = x
-                                        paths[i].prevy = y
-                                        paths[i].x = newx
-                                        paths[i].y = newy
-                                else:
-                                        auxpath = path(name+succ[j], newx, newy, x, y, lab)
-                                        paths.append(auxpath)
-                                if succ[j] == 'P':
-                                        paths[i].lab = open_door(lab, lab[x][y], w, h)
+                        [newx, newy] = getnewpos(succ[j], x, y)
+                        # Check if labyrinth is solved
+                        if newx == xfinnish and newy == yfinnish:
+                                print 'LABYRINTH IS SOLVED'
+                                solved = 1
+                                paths[i].name += succ[j]
+                                # Add all the other paths to the remove list
+                                for s in range(0, len(paths)):
+                                        if s != i:
+                                                index2rem.append(s)
+                        if not solved:
+                                if newx != prevx or newy != prevy:
+                                        if len(paths[i].name) == depth:
+                                                paths[i].name += succ[j]
+                                                paths[i].prevx = x
+                                                paths[i].prevy = y
+                                                paths[i].x = newx
+                                                paths[i].y = newy
+                                        else:
+                                                auxpath = path(name+succ[j], newx, newy, x, y, lab)
+                                                paths.append(auxpath)
+                                        if succ[j] == 'P':
+                                                open_door(paths[i].lab, lab[x][y], w, h)
+                        #if paths[i].name == 'DDPUUUUURPLLLLLDDDDDRPLUUURRP':
+                        #        print succ
+                        #        printlab(paths[i].lab, w, h)
                 if len(paths[i].name) == depth:
                         index2rem.append(i)
-        # remove paths with dead ends
+        # remove selected paths
         for k in range(0, len(index2rem)):
                 if len(paths) == 1:
-                        #print 'final:'
+                        print '\nfinal:'
                         print len(paths[0].name)
                         print paths[0].name
                 paths.pop(index2rem[k]-k)
-#        if depth == 20:
-#                for k in range(0, len(paths)):
-#                        print paths[k].name
-#                paths = []
+        #if depth>30 and depth <= 35:
+        #        print '---------'
+        #        for d in range(0,len(paths)):
+        #                print paths[d].name
+print len(paths[0].name)
+print paths[0].name
