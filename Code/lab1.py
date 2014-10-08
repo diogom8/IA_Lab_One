@@ -1,3 +1,6 @@
+import time
+start = time.time()
+
 ###############################
 #       DEFINITIONS
 ###############################
@@ -15,7 +18,6 @@ class path:
                 self.y     = y
                 self.prevx = prevx
                 self.prevy = prevy
-                #self.lab   = lab      
                 self.doors = doors
                 
 ###############################
@@ -58,13 +60,14 @@ def search_ipos(lab, w, h, target):
 #       Assumes that the agent is not in an edge of the lab
 def successor(doors, lab, x, y, w, h):
         children = []
-        if lab[x-1][y]!=0 or (lab[x-1][y] >= 200 and lab[x-1][y] <= 399 and doors[lab[x-1][y]%100] == OPEN):
+        if lab[x-1][y]!=0 and (lab[x-1][y] < 200 or doors[lab[x-1][y]%100] == OPEN):
+                #print lab[x-1][y], doors[lab[x-1][y]%100]
                 children.append('U')
-        if lab[x+1][y]!=0 or (lab[x+1][y] >= 200 and lab[x+1][y] <= 399 and doors[lab[x+1][y]%100] == OPEN):
+        if lab[x+1][y]!=0 and (lab[x+1][y] < 200 or doors[lab[x+1][y]%100] == OPEN):
                 children.append('D')
-        if lab[x][y-1]!=0 or (lab[x][y-1] >= 200 and lab[x][y-1] <= 399 and doors[lab[x][y-1]%100] == OPEN):
+        if lab[x][y-1]!=0 and (lab[x][y-1] < 200 or doors[lab[x][y-1]%100] == OPEN):
                 children.append('L')
-        if lab[x][y+1]!=0 or (lab[x][y+1] >= 200 and lab[x][y+1] <= 399 and doors[lab[x][y+1]%100] == OPEN):
+        if lab[x][y+1]!=0 and (lab[x][y+1] < 200 or doors[lab[x][y+1]%100] == OPEN):
                 children.append('R')
         if lab[x][y] >= 100 and lab[x][y] <= 199:
                 #if isclosed(lab, lab[x][y]):
@@ -131,7 +134,6 @@ printlab(lab, w, h)
 [xfinnish, yfinnish] = search_ipos(lab, w, h, 3) # look for finnish
 
 doors = create_doors_dict(lab, w, h)
-print doors             
 isuccessors = successor(doors, lab, x, y, w, h)
 
 for i in range(0, len(isuccessors)):
@@ -153,10 +155,7 @@ while not solved:
                 prevx = paths[i].prevx
                 prevy = paths[i].prevy
                 doors = dict(paths[i].doors)
-                if depth < 10:
-                        print doors
-                #lab = [list(a) for a in paths[i].lab]
-                # search for possible movements
+                # compute possible movements
                 succ = successor(paths[i].doors, lab, x, y, w, h)
                 for j in range(0, len(succ)):
                         [newx, newy] = getnewpos(succ[j], x, y)
@@ -165,10 +164,8 @@ while not solved:
                                 print 'LABYRINTH IS SOLVED'
                                 solved = 1
                                 paths[i].name += succ[j]
-                                # Add all the other paths to the remove list
-                                for s in range(0, len(paths)):
-                                        if s != i:
-                                                index2rem.append(s)
+                                print len(paths[i].name)
+                                print paths[i].name
                         if not solved:
                                 if newx != prevx or newy != prevy:
                                         if len(paths[i].name) == depth:
@@ -178,32 +175,20 @@ while not solved:
                                                 paths[i].x = newx
                                                 paths[i].y = newy
                                                 if succ[j] == 'P':
-                                                        doors[lab[x][y] - 100]=1-doors[lab[x][y] -100]
+                                                        doorsaux = dict(doors)
+                                                        doorsaux[lab[x][y]-100]=1-doors[lab[x][y] -100]
+                                                        paths[i].doors = dict(doorsaux)
                                         else:
+                                                doorsaux = dict(doors)
                                                 if succ[j] == 'P':
-                                                        doors[lab[x][y]  - 100]=1-doors[lab[x][y] -100]
-                                                auxpath = path(name+succ[j], newx, newy, x, y, doors)
+                                                        doorsaux[lab[x][y]-100]=1-doors[lab[x][y] -100]
+                                                auxpath = path(name+succ[j], newx, newy, x, y, doorsaux)
                                                 paths.append(auxpath)
-                                        #if succ[j] == 'P':
-                                        #        
-                                        #        for d in range(0, len(paths)):
-                                        #                print paths[d].lab[6][2]
-                                        #        open_door(paths[i].lab, lab[x][y], w, h)
-                        #if paths[i].name == 'DDPUUUUURPLLLLLDDDDDRPLUUURRP':
-                        #        print succ
-                        #        printlab(paths[i].lab, w, h)
                 if len(paths[i].name) == depth:
                         index2rem.append(i)
         # remove selected paths
         for k in range(0, len(index2rem)):
-                if len(paths) == 1:
-                        print '\nfinal:'
-                        print len(paths[0].name)
-                        print paths[0].name
                 paths.pop(index2rem[k]-k)
-        #if depth > 12 and depth < 20:
-        #        print '---------'
-        #        for d in range(0,len(paths)):
-        #                print paths[d].name
-print len(paths[0].name)
-print paths[0].name
+                
+end = time.time()
+print 'Execution time: ', end-start, 'seconds'
