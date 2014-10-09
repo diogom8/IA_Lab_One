@@ -144,6 +144,7 @@ for i in range(0, len(isuccessors)):
 # do the search
 depth = 0
 solved = 0
+GeneratedNodes = len(paths);
 while not solved:
         index2rem = []
         depth = depth+1
@@ -164,9 +165,10 @@ while not solved:
                                 print 'LABYRINTH IS SOLVED'
                                 solved = 1
                                 paths[i].name += succ[j]
-                                print len(paths[i].name)
-                                print paths[i].name
-                        if not solved:
+                                print 'Number of Steps: ',len(paths[i].name)
+                                print 'Solution Steps: ',paths[i].name
+                        if not solved:#Lets generate successor nodes
+                                GeneratedNodes = GeneratedNodes+1;
                                 if newx != prevx or newy != prevy:
                                         if len(paths[i].name) == depth:
                                                 paths[i].name += succ[j]
@@ -191,4 +193,5 @@ while not solved:
                 paths.pop(index2rem[k]-k)
                 
 end = time.time()
+print 'Generated Nodes: ', GeneratedNodes
 print 'Execution time: ', end-start, 'seconds'
