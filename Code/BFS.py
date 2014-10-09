@@ -26,6 +26,7 @@ class path:
                 self.prevx = prevx
                 self.prevy = prevy
                 self.doors = doors
+                self.loop = loop
                 
 ###############################
 #       FUNCTIONS
@@ -77,8 +78,8 @@ def successor(doors, lab, x, y, w, h):
         if lab[x][y+1]!=0 and (lab[x][y+1] < 200 or doors[lab[x][y+1]%100][(x,y+1)] == OPEN):
                 children.append('R')
         if lab[x][y] >= 100 and lab[x][y] <= 199 and doors.get(lab[x][y]%100) != None:
-                #if isclosed(lab, lab[x][y]):
-                children.append('P')
+                if not allopen(lab, lab[x][y]):
+                        children.append('P')
         return children        
 
 def getnewpos(movement, x, y):
@@ -93,35 +94,14 @@ def getnewpos(movement, x, y):
         if movement == 'P':
                 return [x, y]
 
-# Opens door correspondent to given switch
-def open_door(labaux, switch, w, h):
-        door = switch + 100
-        # find door position
-        for l, row in enumerate(labaux):
-                if door in row:
-                        # open door
-                        labaux[l][row.index(door)]+=100
-                        break
-        
 # Checks if door correspondent to given switch is closed
-def isclosed(lab, switch):
-        door = switch + 100
-        # find door position
-        for l, row in enumerate(lab):
-                if door in row:
-                        return True
-        return False
+def allopen(lab, switch):
+        var = 1
+        for x in doors[switch%100].values():
+                var *= x
+        return var
         
 # Create doors dictionary
-def create_doors_dict(lab, w, h):
-        dic = {}
-        for line in range(0,h):
-                for column in range(0,w):
-                        if lab[line][column]>=200 and lab[line][column]<=299:
-                                dic[lab[line][column] - 200] = CLOSED            
-                        if lab[line][column]>=300 and lab[line][column]<=399:
-                                dic[lab[line][column] - 300] = OPEN     
-        return dic
 def Ncreate_doors_dict(lab, w, h):
         dic = {}
         for line in range(0,h):
@@ -136,7 +116,25 @@ def Ncreate_doors_dict(lab, w, h):
                                         dic[lab[line][column]%100][(line,column)] = OPEN
                                 else:
                                         dic[lab[line][column]%100] = {(line,column):OPEN}      
-        return dic                                
+        return dic
+
+def iftest(var,test_value):
+        if var > test_value:
+                return 1
+        else:
+                return 0
+
+#Create Possible Loop positions dictionary
+def loop_avoid_dict(lab,w,h):
+        dic = {}
+        for line in range(0,h):
+                for column in range(0,w):
+                        sum = 0
+                        if lab[line][column] > 0:
+                                sum = iftest(lab[line-1][column],0)+iftest(lab[line+1][column],0)+iftest(lab[line][column-1],0)+iftest(lab[line][column+1],0)
+                                if sum > 2:
+                                        dic[(line,column)] = 0
+        return dic                      
 ###############################
 #       MAIN
 ###############################
@@ -156,6 +154,8 @@ print 'DICTIO: ', Ncreate_doors_dict(lab, w, h)
 
 doors = Ncreate_doors_dict(lab, w, h)
 isuccessors = successor(doors, lab, x, y, w, h)
+loop = loop_avoid_dict(lab,w,h)
+print 'LOOP AVOID: ', loop
 
 for i in range(0, len(isuccessors)):
         [newx, newy] = getnewpos(isuccessors[i], x, y)
@@ -177,6 +177,7 @@ while paths and not solved:
                 prevx = paths[i].prevx
                 prevy = paths[i].prevy
                 doors = dict(paths[i].doors)
+                loop = dict(paths[i].loop)
                 # compute possible movements
                 succ = successor(paths[i].doors, lab, x, y, w, h)
                 for j in range(0, len(succ)):
@@ -191,7 +192,7 @@ while paths and not solved:
                                 
                         if not solved:#Lets generate successor nodes
                                 if newx != prevx or newy != prevy:
-                                        GeneratedNodes = GeneratedNodes+1;
+                                        GeneratedNodes += 1;
                                         if len(paths[i].name) == depth:
                                                 paths[i].name += succ[j]
                                                 paths[i].prevx = x
@@ -216,8 +217,10 @@ while paths and not solved:
         # remove selected paths
         for k in range(0, len(index2rem)):
                 paths.pop(index2rem[k]-k)
+
 if paths == []:
         print 'Problem does not have a solution'        
 end = time.time()
 print 'Generated Nodes: ', GeneratedNodes
 print 'Execution time: ', end-start, 'seconds'
+
