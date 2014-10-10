@@ -77,8 +77,8 @@ def successor(doors, lab, x, y, w, h):
         if lab[x][y+1]!=0 and (lab[x][y+1] < 200 or doors[lab[x][y+1]%100][(x,y+1)] == OPEN):
                 children.append('R')
         if lab[x][y] >= 100 and lab[x][y] <= 199 and doors.get(lab[x][y]%100) != None:
-                #if isclosed(lab, lab[x][y]):
-                children.append('P')
+                if isclosed(lab, lab[x][y]):
+                        children.append('P')
         return children        
 
 def getnewpos(movement, x, y):
@@ -105,12 +105,13 @@ def open_door(labaux, switch, w, h):
         
 # Checks if door correspondent to given switch is closed
 def isclosed(lab, switch):
-        door = switch + 100
-        # find door position
-        for l, row in enumerate(lab):
-                if door in row:
-                        return True
-        return False
+        sum = 0
+        for x in doors[switch%100].values():
+                sum += x
+        if sum == 0:
+                return True
+        else:
+                return False
         
 # Create doors dictionary
 def create_doors_dict(lab, w, h):
@@ -191,7 +192,7 @@ while paths and not solved:
                                 
                         if not solved:#Lets generate successor nodes
                                 if newx != prevx or newy != prevy:
-                                        GeneratedNodes = GeneratedNodes+1;
+                                        GeneratedNodes += 1;
                                         if len(paths[i].name) == depth:
                                                 paths[i].name += succ[j]
                                                 paths[i].prevx = x
@@ -216,8 +217,12 @@ while paths and not solved:
         # remove selected paths
         for k in range(0, len(index2rem)):
                 paths.pop(index2rem[k]-k)
+
 if paths == []:
         print 'Problem does not have a solution'        
 end = time.time()
 print 'Generated Nodes: ', GeneratedNodes
 print 'Execution time: ', end-start, 'seconds'
+print 'All paths: \n\n'
+for i in range(len(paths)):
+        print 'Path ', i,': ',paths[i].name
