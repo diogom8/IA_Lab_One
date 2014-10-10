@@ -5,8 +5,15 @@ start = time.time()
 #       DEFINITIONS
 ###############################
 
-filename = 'input_example.txt'
+import sys
+if len(sys.argv) == 2:
+        filename = str(sys.argv[1])
+else:
+        print "\n\n ERROR: Please insert ONE labyrinth filename\n\n"
+        exit()
+print 'Arguments: ', len(sys.argv)
 
+#filename = 'input_example.txt'
 CLOSED = 0
 OPEN = 1
 
@@ -60,16 +67,16 @@ def search_ipos(lab, w, h, target):
 #       Assumes that the agent is not in an edge of the lab
 def successor(doors, lab, x, y, w, h):
         children = []
-        if lab[x-1][y]!=0 and (lab[x-1][y] < 200 or doors[lab[x-1][y]%100] == OPEN):
+        if lab[x-1][y]!=0 and (lab[x-1][y] < 200 or doors[lab[x-1][y]%100][(x-1,y)] == OPEN):
                 #print lab[x-1][y], doors[lab[x-1][y]%100]
                 children.append('U')
-        if lab[x+1][y]!=0 and (lab[x+1][y] < 200 or doors[lab[x+1][y]%100] == OPEN):
+        if lab[x+1][y]!=0 and (lab[x+1][y] < 200 or doors[lab[x+1][y]%100][(x+1,y)] == OPEN):
                 children.append('D')
-        if lab[x][y-1]!=0 and (lab[x][y-1] < 200 or doors[lab[x][y-1]%100] == OPEN):
+        if lab[x][y-1]!=0 and (lab[x][y-1] < 200 or doors[lab[x][y-1]%100][(x,y-1)] == OPEN):
                 children.append('L')
-        if lab[x][y+1]!=0 and (lab[x][y+1] < 200 or doors[lab[x][y+1]%100] == OPEN):
+        if lab[x][y+1]!=0 and (lab[x][y+1] < 200 or doors[lab[x][y+1]%100][(x,y+1)] == OPEN):
                 children.append('R')
-        if lab[x][y] >= 100 and lab[x][y] <= 199:
+        if lab[x][y] >= 100 and lab[x][y] <= 199 and doors.get(lab[x][y]%100) != None:
                 #if isclosed(lab, lab[x][y]):
                 children.append('P')
         return children        
@@ -115,25 +122,39 @@ def create_doors_dict(lab, w, h):
                         if lab[line][column]>=300 and lab[line][column]<=399:
                                 dic[lab[line][column] - 300] = OPEN     
         return dic
-                                
+def Ncreate_doors_dict(lab, w, h):
+        dic = {}
+        for line in range(0,h):
+                for column in range(0,w):
+                        if lab[line][column]>=200 and lab[line][column]<=299:
+                                if lab[line][column]%100 in dic:
+                                        dic[lab[line][column]%100][(line,column)] = CLOSED
+                                else:
+                                        dic[lab[line][column]%100] = {(line,column):CLOSED}            
+                        if lab[line][column]>=300 and lab[line][column]<=399:
+                                if lab[line][column]%100 in dic:
+                                        dic[lab[line][column]%100][(line,column)] = OPEN
+                                else:
+                                        dic[lab[line][column]%100] = {(line,column):OPEN}      
+        return dic                                
 ###############################
 #       MAIN
 ###############################
 
 # Store numbers from file in lab        
 with open(filename) as f:
-    w, h = [int(x) for x in f.readline().split()] # read first line
+    h, w = [int(x) for x in f.readline().split()] # read first line
     lab = []
     for line in f: # read rest of lines
         lab.append([int(x) for x in line.split()])
         
 printlab(lab, w, h)
-
+print 'DICTIO: ', Ncreate_doors_dict(lab, w, h)
 # init paths list
 [x, y] = search_ipos(lab, w, h, 2) # look for agent
 [xfinnish, yfinnish] = search_ipos(lab, w, h, 3) # look for finnish
 
-doors = create_doors_dict(lab, w, h)
+doors = Ncreate_doors_dict(lab, w, h)
 isuccessors = successor(doors, lab, x, y, w, h)
 
 for i in range(0, len(isuccessors)):
@@ -145,7 +166,7 @@ for i in range(0, len(isuccessors)):
 depth = 0
 solved = 0
 GeneratedNodes = len(paths);
-while not solved:
+while paths and not solved:
         index2rem = []
         depth = depth+1
         for i in range(0, len(paths)):
@@ -167,9 +188,10 @@ while not solved:
                                 paths[i].name += succ[j]
                                 print 'Number of Steps: ',len(paths[i].name)
                                 print 'Solution Steps: ',paths[i].name
+                                
                         if not solved:#Lets generate successor nodes
-                                GeneratedNodes = GeneratedNodes+1;
                                 if newx != prevx or newy != prevy:
+                                        GeneratedNodes = GeneratedNodes+1;
                                         if len(paths[i].name) == depth:
                                                 paths[i].name += succ[j]
                                                 paths[i].prevx = x
@@ -177,13 +199,16 @@ while not solved:
                                                 paths[i].x = newx
                                                 paths[i].y = newy
                                                 if succ[j] == 'P':
-                                                        doorsaux = dict(doors)
-                                                        doorsaux[lab[x][y]-100]=1-doors[lab[x][y] -100]
-                                                        paths[i].doors = dict(doorsaux)
+                                                        doorsaux = {list(doors.keys())[i]: dict(doors.values()[i]) for i in range(len(doors.keys()))}
+                                                        for var in doorsaux[lab[x][y]%100]:
+                                                                doorsaux[lab[x][y]%100][var] = 1-doorsaux[lab[x][y]%100][var]
+                                                        paths[i].doors = dict(doorsaux)                                                        
+                                                                                                               
                                         else:
-                                                doorsaux = dict(doors)
+                                                doorsaux = {list(doors.keys())[i]: dict(doors.values()[i]) for i in range(len(doors.keys()))}
                                                 if succ[j] == 'P':
-                                                        doorsaux[lab[x][y]-100]=1-doors[lab[x][y] -100]
+                                                        for var in doorsaux[lab[x][y]%100]:
+                                                                doorsaux[lab[x][y]%100][var] = 1-doorsaux[lab[x][y]%100][var]
                                                 auxpath = path(name+succ[j], newx, newy, x, y, doorsaux)
                                                 paths.append(auxpath)
                 if len(paths[i].name) == depth:
@@ -191,7 +216,8 @@ while not solved:
         # remove selected paths
         for k in range(0, len(index2rem)):
                 paths.pop(index2rem[k]-k)
-                
+if paths == []:
+        print 'Problem does not have a solution'        
 end = time.time()
 print 'Generated Nodes: ', GeneratedNodes
 print 'Execution time: ', end-start, 'seconds'
