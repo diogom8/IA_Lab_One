@@ -4,22 +4,22 @@ start = time.time()
 ###############################
 #       DEFINITIONS
 ###############################
-
+#
 import sys
 if len(sys.argv) == 2:
         filename = str(sys.argv[1])
 else:
         print "\n\n ERROR: Please insert ONE labyrinth filename\n\n"
         exit()
-print 'Arguments: ', len(sys.argv)
 
-#filename = 'input_example.txt'
+
+#filename = 'inputTest7.txt'
 CLOSED = 0
 OPEN = 1
 
 paths = []
 class path:
-        def __init__(self, name, x, y, prevx, prevy, doors):
+        def __init__(self, name, x, y, prevx, prevy, doors,loop):
                 self.name  = name
                 self.x     = x
                 self.y     = y
@@ -66,7 +66,8 @@ def search_ipos(lab, w, h, target):
         
 # Successor function: given a node, returns the set of child nodes
 #       Assumes that the agent is not in an edge of the lab
-def successor(doors, lab, x, y, w, h):
+def successor(loop,doors, lab, x, y, w, h):
+        loop_thershold = 10
         children = []
         if lab[x-1][y]!=0 and (lab[x-1][y] < 200 or doors[lab[x-1][y]%100][(x-1,y)] == OPEN):
                 #print lab[x-1][y], doors[lab[x-1][y]%100]
@@ -80,6 +81,17 @@ def successor(doors, lab, x, y, w, h):
         if lab[x][y] >= 100 and lab[x][y] <= 199 and doors.get(lab[x][y]%100) != None:
                 if not allopen(lab, lab[x][y]):
                         children.append('P')
+        
+
+        #if in loop: no sucessors are passed and node is erased in main
+        try:
+                loop[(x,y)] += 1                
+                if loop[(x,y)] > loop_thershold:
+                        children = []
+        except KeyError:
+                pass               
+        
+
         return children        
 
 def getnewpos(movement, x, y):
@@ -153,13 +165,14 @@ print 'DICTIO: ', Ncreate_doors_dict(lab, w, h)
 [xfinnish, yfinnish] = search_ipos(lab, w, h, 3) # look for finnish
 
 doors = Ncreate_doors_dict(lab, w, h)
-isuccessors = successor(doors, lab, x, y, w, h)
 loop = loop_avoid_dict(lab,w,h)
-print 'LOOP AVOID: ', loop
+isuccessors = successor(loop,doors, lab, x, y, w, h)
+
+print 'Initial loop state: ', loop
 
 for i in range(0, len(isuccessors)):
         [newx, newy] = getnewpos(isuccessors[i], x, y)
-        auxpath = path(isuccessors[i], newx, newy, x, y, doors)
+        auxpath = path(isuccessors[i], newx, newy, x, y, doors,loop)
         paths.append(auxpath)
 
 # do the search
@@ -178,8 +191,7 @@ while paths and not solved:
                 prevy = paths[i].prevy
                 doors = dict(paths[i].doors)
                 loop = dict(paths[i].loop)
-                # compute possible movements
-                succ = successor(paths[i].doors, lab, x, y, w, h)
+                succ = successor(loop,paths[i].doors, lab, x, y, w, h)
                 for j in range(0, len(succ)):
                         [newx, newy] = getnewpos(succ[j], x, y)
                         # Check if labyrinth is solved
@@ -189,7 +201,7 @@ while paths and not solved:
                                 paths[i].name += succ[j]
                                 print 'Number of Steps: ',len(paths[i].name)
                                 print 'Solution Steps: ',paths[i].name
-                                
+                                print 'Final loop state: ',paths[i].loop
                         if not solved:#Lets generate successor nodes
                                 if newx != prevx or newy != prevy:
                                         GeneratedNodes += 1;
@@ -199,6 +211,7 @@ while paths and not solved:
                                                 paths[i].prevy = y
                                                 paths[i].x = newx
                                                 paths[i].y = newy
+                                                paths[i].loop = loop
                                                 if succ[j] == 'P':
                                                         doorsaux = {list(doors.keys())[i]: dict(doors.values()[i]) for i in range(len(doors.keys()))}
                                                         for var in doorsaux[lab[x][y]%100]:
@@ -210,13 +223,15 @@ while paths and not solved:
                                                 if succ[j] == 'P':
                                                         for var in doorsaux[lab[x][y]%100]:
                                                                 doorsaux[lab[x][y]%100][var] = 1-doorsaux[lab[x][y]%100][var]
-                                                auxpath = path(name+succ[j], newx, newy, x, y, doorsaux)
+                                                auxpath = path(name+succ[j], newx, newy, x, y, doorsaux,loop)
                                                 paths.append(auxpath)
                 if len(paths[i].name) == depth:
                         index2rem.append(i)
         # remove selected paths
+        
         for k in range(0, len(index2rem)):
                 paths.pop(index2rem[k]-k)
+                
 
 if paths == []:
         print 'Problem does not have a solution'        
