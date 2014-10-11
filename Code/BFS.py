@@ -67,7 +67,7 @@ def search_ipos(lab, w, h, target):
 # Successor function: given a node, returns the set of child nodes
 #       Assumes that the agent is not in an edge of the lab
 def successor(loop,doors, lab, x, y, w, h):
-        loop_thershold = 10
+        #loop_thershold = 10
         children = []
         if lab[x-1][y]!=0 and (lab[x-1][y] < 200 or doors[lab[x-1][y]%100][(x-1,y)] == OPEN):
                 #print lab[x-1][y], doors[lab[x-1][y]%100]
@@ -84,12 +84,12 @@ def successor(loop,doors, lab, x, y, w, h):
         
 
         #if in loop: no sucessors are passed and node is erased in main
-        try:
-                loop[(x,y)] += 1                
-                if loop[(x,y)] > loop_thershold:
-                        children = []
-        except KeyError:
-                pass               
+        #try:
+        #        loop[(x,y)] += 1                
+        #        if loop[(x,y)] > loop_thershold:
+        #                children = []
+        #except KeyError:
+        #        pass               
         
 
         return children        
@@ -159,7 +159,7 @@ with open(filename) as f:
         lab.append([int(x) for x in line.split()])
         
 printlab(lab, w, h)
-print 'DICTIO: ', Ncreate_doors_dict(lab, w, h)
+#print 'DICTIO: ', Ncreate_doors_dict(lab, w, h)
 # init paths list
 [x, y] = search_ipos(lab, w, h, 2) # look for agent
 [xfinnish, yfinnish] = search_ipos(lab, w, h, 3) # look for finnish
@@ -168,9 +168,9 @@ doors = Ncreate_doors_dict(lab, w, h)
 loop = loop_avoid_dict(lab,w,h)
 isuccessors = successor(loop,doors, lab, x, y, w, h)
 
-print 'Initial loop state: ', loop
+#print 'Initial loop state: ', loop
 
-for i in range(0, len(isuccessors)):
+for i in range(len(isuccessors)):
         [newx, newy] = getnewpos(isuccessors[i], x, y)
         auxpath = path(isuccessors[i], newx, newy, x, y, doors,loop)
         paths.append(auxpath)
@@ -182,7 +182,7 @@ GeneratedNodes = len(paths);
 while paths and not solved:
         index2rem = []
         depth = depth+1
-        for i in range(0, len(paths)):
+        for i in range(len(paths)):
                 # save elements
                 name = paths[i].name
                 x = paths[i].x
@@ -192,7 +192,7 @@ while paths and not solved:
                 doors = dict(paths[i].doors)
                 loop = dict(paths[i].loop)
                 succ = successor(loop,paths[i].doors, lab, x, y, w, h)
-                for j in range(0, len(succ)):
+                for j in range(len(succ)):
                         [newx, newy] = getnewpos(succ[j], x, y)
                         # Check if labyrinth is solved
                         if newx == xfinnish and newy == yfinnish:
@@ -201,9 +201,8 @@ while paths and not solved:
                                 paths[i].name += succ[j]
                                 print 'Number of Steps: ',len(paths[i].name)
                                 print 'Solution Steps: ',paths[i].name
-                                print 'Final loop state: ',paths[i].loop
-                        if not solved:#Lets generate successor nodes
-                                if newx != prevx or newy != prevy:
+                                #print 'Final loop state: ',paths[i].loop
+                        if not solved and (newx != prevx or newy != prevy):#Lets generate successor nodes
                                         GeneratedNodes += 1;
                                         if len(paths[i].name) == depth:
                                                 paths[i].name += succ[j]
@@ -224,14 +223,22 @@ while paths and not solved:
                                                         for var in doorsaux[lab[x][y]%100]:
                                                                 doorsaux[lab[x][y]%100][var] = 1-doorsaux[lab[x][y]%100][var]
                                                 auxpath = path(name+succ[j], newx, newy, x, y, doorsaux,loop)
-                                                paths.append(auxpath)
+                                                paths.append(auxpath)                
                 if len(paths[i].name) == depth:
                         index2rem.append(i)
+                        
+        # remove repetitions
+        for z in range(len(paths)):
+            for y in range(z+1, len(paths)):
+                if paths[z].x == paths[y].x and paths[z].y == paths[y].y and paths[z].doors == paths[y].doors:
+                    if y not in index2rem:
+                        index2rem.append(y)
         # remove selected paths
-        
-        for k in range(0, len(index2rem)):
+        index2rem = sorted(index2rem)
+        for k in range(len(index2rem)):
+                #if len(paths) == 1:
+                #    print paths[0].name
                 paths.pop(index2rem[k]-k)
-                
 
 if paths == []:
         print 'Problem does not have a solution'        
