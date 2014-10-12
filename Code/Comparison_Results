@@ -1,0 +1,12 @@
+----Results-----
+Method: BFS - Astar
+input_example: 159 | 0.00183796882629 seconds - 159 | 0.0022120475769 seconds
+inputTest1:     5 | 0.000245094299316 seconds - 5 | 0.000251054763794 seconds
+
+inputTest3:     25 | 0.000491857528687 seconds - 25 | 0.000530004501343 seconds
+inputTest4:     48 | 0.000768899917603 seconds - 42 | 0.000654935836792 seconds
+inputTest5:     180 | 0.00181102752686 seconds - 107| 0.0020580291748 seconds
+inputTest6:     12488 | 0.70458984375 seconds  - 2797|  5.92550897598 seconds (ATENTION: 31 steps for Astar but 30 for BFS)
+inputTest7:     19309 | 0.332171916962 seconds - 19387 | 15.205698967 seconds
+intputTest8:    1099 | 0.0143020153046 seconds - 366 | 0.0250480175018 seconds
+
