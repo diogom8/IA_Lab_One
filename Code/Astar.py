@@ -240,7 +240,7 @@ while paths and not solved:
                                         remove = z
                                 else:
                                         remove = y
-                                if y not in index2rem:
+                                if remove not in index2rem:
                                         index2rem.append(remove)
 
 
