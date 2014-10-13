@@ -1,0 +1,25 @@
+----- RESULTS OUTPUT -----
+#########
+#       #
+#  A*   #
+#       #       
+#########
+
+@@ (I)input_example.txt @@
+Steps: 50 Nodes: 176 time: 0.00241589546204seconds
+@@ (I)inputTest1.txt @@
+Steps: 4 Nodes: 5 time: 0.00025200843811seconds
+@@ (I)inputTest2.txt @@
+Steps: 4 Nodes: 4 time: 0.000233888626099seconds
+@@ (I)inputTest3.txt @@
+Steps: 20 Nodes: 25 time: 0.000525951385498seconds
+@@ (I)inputTest4.txt @@
+Steps: 26 Nodes: 41 time: 0.000713109970093seconds
+@@ (I)inputTest5.txt @@
+Steps: 15 Nodes: 97 time: 0.00156998634338seconds
+@@ (I)inputTest6.txt @@
+Steps: 30 Nodes: 2599 time: 5.6968998909seconds
+@@ (I)inputTest7.txt @@
+Steps: 140 Nodes: 18623 time: 17.2474410534seconds
+@@ (I)inputTest8.txt @@
+Steps: 18 Nodes: 225 time: 0.00995278358459seconds
