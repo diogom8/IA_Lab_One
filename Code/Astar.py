@@ -12,7 +12,7 @@ else:
         print "\n\n ERROR: Please insert ONE labyrinth filename\n\n"
         exit()
         
-#filename = 'inputTest1.txt'
+#filename = 'inputTest6.txt'
 
 CLOSED = 0
 OPEN = 1
@@ -130,8 +130,22 @@ def SelectSucNode(paths):
                         if (paths[i].hFunc + paths[i].gFunc) < LowerF:
                                 LowerF = (paths[i].hFunc + paths[i].gFunc)
                                 index = i
-        return index 
-
+        return index
+ 
+#def SelectSucNode(succ_len,paths):
+#        LowerF = paths[0].hFunc + paths[0].gFunc
+#        for k in range(len(paths)-succ_len,len(paths)):
+#                if (paths[k].hFunc + paths[k].gFunc) < LowerF:
+#                        LowerF = (paths[k].hFunc + paths[k].gFunc)
+#                        index = k
+#
+#        if k != 0:
+#                auxpath_k = paths[k]
+#                auxpath_0 = paths[0]
+#
+#                paths[0] = auxpath_k
+#                paths[k] = auxpath_0
+ 
 #Heuristic Computation - Manhattan Distance
 def ComputeHeuristicManhattan(xfinish,yfinish,x,y):
         return (abs(xfinish - x) + abs(yfinish - y))
@@ -155,24 +169,27 @@ printlab(lab, w, h)
 [xfinish, yfinish] = search_ipos(lab, w, h, 3) # look for finish
 
 doors = Ncreate_doors_dict(lab, w, h)
-heuristic = ComputeHeuristicManhattan(xfinish,yfinish,x,y)
+
 isuccessors = successor(doors, lab, x, y, w, h)
 
 for i in range(0, len(isuccessors)):
         [newx, newy] = getnewpos(isuccessors[i], x, y)
-        auxpath = path(isuccessors[i], newx, newy, x, y, doors,1,ComputeHeuristicManhattan(xfinish,yfinish,newx,newy))
+        hFunc = ComputeHeuristicManhattan(xfinish,yfinish,newx,newy)
+        gFunc = 1
+        auxpath = path(isuccessors[i], newx, newy, x, y, doors,gFunc,hFunc)
         paths.append(auxpath)
 
 # do the search
 depth = 0
 solved = 0
 GeneratedNodes = len(paths);
-
+#succ = isuccessors
 while paths and not solved:
         index2rem = []
         
         #Select succesor node based on MIN_f = g + h
         i = SelectSucNode(paths)
+        
 
         
         # save elements
@@ -182,7 +199,7 @@ while paths and not solved:
         prevx = paths[i].prevx
         prevy = paths[i].prevy
         doors = dict(paths[i].doors)
-        g = paths[i].gFunc 
+        gFunc = paths[i].gFunc 
         # compute possible movements
         succ = successor(paths[i].doors, lab, x, y, w, h)
         depth = len(paths[i].name)
@@ -193,7 +210,6 @@ while paths and not solved:
                         print 'LABYRINTH IS SOLVED'
                         solved = 1
                         name += succ[j]
-                        #print 'X: ',newx,'Y: ',newy,'H: ',paths[i].hFunc,'G: ',paths[i].gFunc
                         print 'Number of Steps: ',len(name)
                         print 'Solution Steps: ',name
                 if not solved and (newx != prevx or newy != prevy):#Lets generate successor nodes
@@ -204,7 +220,6 @@ while paths and not solved:
                                 paths[i].prevy = y
                                 paths[i].x = newx
                                 paths[i].y = newy
-                                                    
                                 paths[i].hFunc = ComputeHeuristicManhattan(xfinish,yfinish,newx,newy)
                                   
                                 
@@ -213,7 +228,7 @@ while paths and not solved:
                                         for var in doorsaux[lab[x][y]%100]:
                                                 doorsaux[lab[x][y]%100][var] = 1-doorsaux[lab[x][y]%100][var]
                                         paths[i].doors = dict(doorsaux)
-                                        paths[i].gFunc = g
+                                        paths[i].gFunc = gFunc + 1
                                 else:
                                         paths[i].gFunc += 1
                         
@@ -222,10 +237,11 @@ while paths and not solved:
                                 if succ[j] == 'P':
                                         for var in doorsaux[lab[x][y]%100]:
                                                 doorsaux[lab[x][y]%100][var] = 1-doorsaux[lab[x][y]%100][var]
-                                        gaux = g
+                                        gaux = gFunc + 1
                                 else:
-                                        gaux = g+1        
-                                auxpath = path(name+succ[j], newx, newy, x, y, doorsaux,gaux,ComputeHeuristicManhattan(xfinish,yfinish,x,y))
+                                        gaux = gFunc+1
+                                haux = ComputeHeuristicManhattan(xfinish,yfinish,newx,newy);       
+                                auxpath = path(name+succ[j], newx, newy, x, y, doorsaux,gaux,haux)
                                 paths.append(auxpath)
 
         if len(paths[i].name) == depth:
@@ -236,12 +252,12 @@ while paths and not solved:
         for z in range(len(paths)):
                 for y in range(z+1, len(paths)):
                         if paths[z].x == paths[y].x and paths[z].y == paths[y].y and paths[z].doors == paths[y].doors:
-                                if len(paths[z].name)>len(paths[y].name):
+                                if len(paths[z].name)>=len(paths[y].name):
                                         remove = z
                                 else:
                                         remove = y
                                 if remove not in index2rem:
-                                        index2rem.append(remove)
+                                       index2rem.append(remove)
 
 
 
@@ -256,6 +272,28 @@ while paths and not solved:
           
 if not solved:
         print 'Problem does not have a solution'   
-end = time.time()
 print 'Generated Nodes: ', GeneratedNodes
-print 'Execution time: ', end-start, 'seconds'
+ElapsedTime = time.time() - start
+print 'Execution time: ', ElapsedTime, 'seconds'
+###SAVING DATA IN FILE FOR COMPARISON###
+printed = False
+fo = open("Output_Compare.txt", "r")
+lines = fo.readlines()
+fo.close()
+fo = open("Output_Compare.txt", "w")
+for line in lines:
+        if line == ('@@ (I)'+filename+' @@\n'):
+                fo.write(line)
+                fo.write('Steps: '+str(len(name))+' Nodes: '+str(GeneratedNodes)+' time: '+str(ElapsedTime)+'seconds\n')
+                lines.remove(line)
+                printed = True
+                
+     
+        else:
+                fo.write(line)
+
+if not printed:
+        fo.write('@@ (I)'+filename+' @@\n')
+        fo.write('Steps: '+str(len(name))+' Nodes: '+str(GeneratedNodes)+' time: '+str(ElapsedTime)+'seconds\n')
+fo.close()
+
