@@ -219,4 +219,6 @@ else:
 ElapsedTime = time.time() - start
 print 'Generated Nodes: ', GeneratedNodes
 print 'Execution time: ', ElapsedTime, 'seconds'
-
+#Generate Output File
+fo = open('OUTPUT_UNINFORMED'+filename, "w")
+fo.write(str(len(name))+'\n'+name)

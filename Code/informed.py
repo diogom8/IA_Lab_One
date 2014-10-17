@@ -234,13 +234,13 @@ while frontier and not solved:
             add = 1
                        
             for b in range(len(explored)):
-                if auxpath.x == explored[b].x and auxpath.y == explored[b].y and auxpath.doors == explored[b].doors:
+                if auxpath.x == explored[b].x and auxpath.y == explored[b].y and auxpath.doors == explored[b].doors and auxpath.gFunc >= explored[b].gFunc:
                     add = 0
                     break
 
             if add:
                 for a in range(len(frontier)):
-                    if auxpath.x == frontier[a].x and auxpath.y == frontier[a].y and auxpath.doors == frontier[a].doors:
+                    if auxpath.x == frontier[a].x and auxpath.y == frontier[a].y and auxpath.doors == frontier[a].doors and auxpath.gFunc >= frontier[a].gFunc:
                         add = 0
                         break
             
@@ -252,3 +252,6 @@ if not solved:
 print 'Generated Nodes: ', GeneratedNodes
 ElapsedTime = time.time() - start
 print 'Execution time: ', ElapsedTime, 'seconds'
+#Generate Output File
+fo = open('OUTPUT_INFORMED'+filename, "w")
+fo.write(str(len(name))+'\n'+name)
