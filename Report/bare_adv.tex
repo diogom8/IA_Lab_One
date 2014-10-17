@@ -1,7 +1,7 @@
-\documentclass[12pt,journal,compsoc]{IEEEtran}
+\documentclass[11pt,journal,compsoc]{IEEEtran}
 
 \usepackage[utf8]{inputenc}
-
+\usepackage{todonotes}
 
 % *** CITATION PACKAGES ***
 %
@@ -55,18 +55,20 @@ pdfkeywords={Computer Society, IEEEtran, journal, LaTeX, paper,
 % paper title
 \title{Artificial Intelligence and Decision Systems: Assignment \#1}
 
-\author{Diogo~Filipe~Guerreiro~Piçarra~da~Cunha Monteiro,
-        Rafael~José~Figueiras~dos~Santos% <-this % stops a space
-        
-\IEEEcompsocitemizethanks{\IEEEcompsocthanksitem D. Monteiro, Aerospace Engineering Student in Instituto Superior Técnico, Lisbon, Portugal. Number 70125.\protect\\
-% note need leading \protect in front of \\ to get a newline within \thanks as
-% \\ is fragile and will error, could use \hfil\break instead.
-E-mail: diogo\_monteiro\_1$@$hotmail.com
 
-\IEEEcompsocthanksitem R. Santos, Aerospace Engineering Student in Instituto Superior Técnico, Lisbon, Portugal. Number 69278.\protect\\
+\author{D. Monteiro$^\dagger$\thanks{$^\dagger$ MSc. student of Aerospace Engineering, Instituto Superior Técnico, Lisbon, Portugal. Student Nr: $70125$}, R.F. Santos$^\ddagger$\thanks{$^\ddagger$ MSc. student of Aerospace Engineering, Instituto Superior Técnico, Lisbon, Portugal. Student Nr: $69278$}\\[.2 cm]
+\textit{University of Lisbon, Lisbon, Portugal}}% <-this % stops a space
+     
+        
+%\IEEEcompsocitemizethanks{\IEEEcompsocthanksitem D. Monteiro, Aerospace Engineering Student in Instituto Superior Técnico, Lisbon, Portugal. Number 70125.\protect\\
 % note need leading \protect in front of \\ to get a newline within \thanks as
 % \\ is fragile and will error, could use \hfil\break instead.
-E-mail: rafael.j.f.santos$@$tecnico.ulisboa.pt}}
+%E-mail: diogo\_monteiro\_1$@$hotmail.com
+
+%\IEEEcompsocthanksitem R. Santos, Aerospace Engineering Student in Instituto Superior Técnico, Lisbon, Portugal. Number 69278.\protect\\
+% note need leading \protect in front of \\ to get a newline within \thanks as
+% \\ is fragile and will error, could use \hfil\break instead.
+%E-mail: rafael.j.f.santos$@$tecnico.ulisboa.pt}}
 
 % note the % following the last \IEEEmembership and also \thanks - 
 % these prevent an unwanted space from occurring between the last author name
@@ -208,27 +210,38 @@ Computer Society, IEEEtran, journal, \LaTeX, paper, template.
 % 
 % Here we have the typical use of a "T" for an initial drop letter
 % and "HIS" in caps to complete the first word.
-\IEEEPARstart{T}{his} demo file is intended to serve as a ``starter file''
-for IEEE Computer Society journal papers produced under \LaTeX\ using
-IEEEtran.cls version 1.8 and later.
-% You must have at least 2 lines in the paragraph with the drop letter
-% (should never be an issue)
-I wish you the best of success.
+\IEEEPARstart{T}{he} aim of the present short report is to describe the results obtained for the Assignment \#1 which aimed the exploration of both uninformed and informed search methods for a maze solving problem. A discussion considering the choices made along the assignment is performed along Sections 2 and 3. In Section 4 the report focuses on the implementation procedure as well in problem representation applied. Section 5 is devoted to the results comparison and final conclusions. The created code can be found attached. \textsc{Python} v2.7 released for \textsc{Unix} operating systems.
 
-\hfill mds
+\hfill 
  
-\hfill December 27, 2012
+\hfill October 17, 2014
+\section{Uninformed Search}
+The first implementation of the maze solver problem was based on the general uninformed search strategies, which are confined to information provided by the problem description. Although there are several different methods of this type, they all search blindly for the goal node. The distinction point within strategies lies on the order the successor nodes are generated.
+The first methods to be discarded from this analysis was the depth-search method.	Despite being attractive due its lower memory use, no optimality is ensured. The uniform-cost method was also discarded since in our problem the path cost for each step is constant. The third non-considered method was the Bidirectional search which clearly presents advantages in terms of space and time complexity and optimality but suggests a rather challenging implementation. Moreover, considering that maps can have closed doors at any point it is easy to think of many examples to which this strategy would not bring any point on favour.\\
+Considering all this aspects and keeping in mind that an optimal algorithm was required, the methods implemented were the \textbf{breadth-first} and \textbf{iterative deepening} search methods. Despite the fact that the time complexity expected for both methods is equal to $O(b^d)$, a decrease of space usage can theoretically be obtained in favour of the latter method.
 
-\subsection{Subsection Heading Here}
-Subsection text here.
-
-% needed in second column of first page if using \IEEEpubid
-%\IEEEpubidadjcol
-
-\subsubsection{Subsubsection Heading Here}
-Subsubsection text here.
-
-
+\section{Informed Search}
+The informed search strategies supposes the use of specific knowledge about the problem and not only its definition. With this more efficiency in terms of time and space complexity can be expected.\\
+In this section the chosen method was the \textbf{A* algorithm} with a well suited heuristic function $h(n)$. This function combined with the path cost function $g(n)$ are the main responsible for the success of the search implementation. In order to ensure optimality the heuristic needs to be consistent implying admissibility. Consistency through a triangular inequality analysis. Those two properties of the heuristic function ensure that the search is optimal as intended.\\
+The choice for an heuristic was not straight forward due to problem characteristics under analysis. The use of a distance-based heuristic could be fairly easy to implement, nevertheless that does not provide a completely trustable information about the way the agent should move. Suppose a scenario in which an agent is at two nodes distance from the goal node but between them there is a closed door which correspondent switch is on the opposite side of the maze. However, one shall also reason that building a rather complex heuristic\footnote{ For instance, suppose using an intermediate breadth-first search algorithm capable of providing the approximate length of the path for a simplified version of the maze} which provides a better indication can also mean a significant increase of the computation time. Having into consideration the referred aspects, the final choice was for the use of the well known \textit{Manhattan Distance} both admissible and consistent as heuristic function.
+\section{Implementation of Problem Description}
+\todo[inline]{truques no codigo}
+\section{Results and Discussion}
+Tab. \todo[inline]{ref} presents the results in terms of generated nodes for each method implemented for all the eight labyrinths in which the analysis was based. The processing time is not indicated here since the results obtained in that term were not significant for comparison. Nevertheless, note for the fact that both methods could solve the analysed labyrinths in less than one second.
+\begin{table}[h]
+\centering
+\begin{tabular}{c|cc|cc}
+  & \multicolumn{2}{c|}{Nodes Generated} & \multicolumn{2}{c}{Computation Time} \\
+  \hline
+ Map &      Breadth-First     &    A*      &      Breadth-First     &         A* \\
+ 1&           &          &           &          \\
+ 2&           &          &           &          \\
+ 3&           &          &           &          \\
+ 4&           &          &           &          \\
+ 5&           &          &           &          \\
+ 6&           &          &           &         
+\end{tabular}
+\end{table}
 % An example of a floating figure using the graphicx package.
 % Note that \label must occur AFTER (or within) \caption.
 % For figures, \caption should occur after the \includegraphics.
@@ -318,11 +331,6 @@ Subsubsection text here.
 
 
 
-\section{Conclusion}
-The conclusion goes here.
-
-
-
 
 
 % if have a single appendix:
@@ -340,27 +348,25 @@ The conclusion goes here.
 %
 
 
-\appendices
-\section{Proof of the First Zonklar Equation}
-Appendix one text goes here.
+%\appendices
+%\section{Proof of the First Zonklar Equation}
+%Appendix one text goes here.
 
 % you can choose not to have a title for an appendix
 % if you want by leaving the argument blank
-\section{}
-Appendix two text goes here.
+%\section{}
+%Appendix two text goes here.
 
 
 % use section* for acknowledgement
-\ifCLASSOPTIONcompsoc
+%\ifCLASSOPTIONcompsoc
   % The Computer Society usually uses the plural form
-  \section*{Acknowledgments}
-\else
+ % \section*{Acknowledgments}
+%\else
   % regular IEEE prefers the singular form
-  \section*{Acknowledgment}
-\fi
+ % \section*{Acknowledgment}
+%\fi
 
-
-The authors would like to thank...
 
 
 % Can use something like this to put references on a page
@@ -395,9 +401,9 @@ The authors would like to thank...
 % (used to reserve space for the reference number labels box)
 \begin{thebibliography}{1}
 
-\bibitem{IEEEhowto:kopka}
-H.~Kopka and P.~W. Daly, \emph{A Guide to {\LaTeX}}, 3rd~ed.\hskip 1em plus
-  0.5em minus 0.4em\relax Harlow, England: Addison-Wesley, 1999.
+\bibitem{book}
+S.~Russell and P.~Norvig, \emph{Atificial Intelligence - A Modern Approach}, 3rd~ed.\hskip 1em plus
+  0.5em minus 0.4em\relax Pearson, 2010.
 
 \end{thebibliography}
 
