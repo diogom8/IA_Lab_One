@@ -1,0 +1,4 @@
+('=>', 'Mythical', 'Immortal')
+('=>', ('not', 'Mythical'), ('and', ('not', 'Immortal'), 'Mammal'))
+('=>', ('or', 'Immortal', 'Mammal'), 'Horned')
+('=>', 'Horned', 'Magical')
