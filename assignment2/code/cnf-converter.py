@@ -70,12 +70,15 @@ def move_not_inwards(sentence):
             lowerOp = sentence[1][0]
             if lowerOp == 'not':
                 sentence = sentence[1][1] # not not A = A 
+                return move_not_inwards(sentence)
             elif lowerOp == 'and':
                 # not(a and b) = [not(a) or not(b)]
                 sentence = ('or',('not',sentence[1][1]),('not',sentence[1][2]))
+                return move_not_inwards(sentence)
             elif lowerOp == 'or':
                 # not(a or b) = [not(a) and not(b)]
-                sentence = ('and',('not',sentence[1][1]),('not',sentence[1][2]))          
+                sentence = ('and',('not',sentence[1][1]),('not',sentence[1][2])) 
+                return move_not_inwards(sentence)         
         else:
             # check if first operand is atomic
             if not isAtomic(sentence[1]):
@@ -284,11 +287,11 @@ CNFsentences = []
 run = True
 
 
-print '------ CNF Converter ------\n\n'
+print '------ CNF Converter ------'
 print 'Filename: '+filename+'\n\n'
 
 while(run):
-    print '\n\n          ## MENU ##\n'
+    print '\n          ## MENU ##\n'
     print '1. List all sentences before conversion\n'
     print '2. Step-by-step conversion\n'
     print '3. List all sentences after conversion\n'
