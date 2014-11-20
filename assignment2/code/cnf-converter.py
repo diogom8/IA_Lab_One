@@ -7,7 +7,7 @@ import sys
 if len(sys.argv) == 2:
         filename = str(sys.argv[1])
 else:
-        print "\n\n ERROR: Please insert only one correct filename\n\n"
+        print "\n\n ERROR: Please insert one correct filename\n\n"
         exit()
 
 
@@ -17,10 +17,14 @@ else:
 
 # reads a list of tuples from file
 def readfile(filename):
-    with open(filename) as f:
-        sentences = []
-        for line in f:
-            sentences.append(eval(line))
+    try:
+        with open(filename) as f:
+            sentences = []
+            for line in f:
+                sentences.append(eval(line))
+    except IOError:
+        print 'ERROR: File "' + filename + '" does not exist!'
+        quit()
     return sentences
 
 # checks if s is atomic
@@ -281,7 +285,7 @@ run = True
 
 
 print '------ CNF Converter ------\n\n'
-print 'Filename:'+filename+'\n\n'
+print 'Filename: '+filename+'\n\n'
 
 while(run):
     print '\n\n          ## MENU ##\n'
