@@ -53,7 +53,7 @@ def outputFormat(clauses):
     if len(outputClause) > 1:
         outputSentence = ('and',outputClause[0],outputClause[1])
         for j in range(2,len(outputClause)):
-            outputSentence = ('and',outputSentence,outputClause[i])
+            outputSentence = ('and',outputSentence,outputClause[j])
     elif len(outputClause) == 1:
         outputSentence = outputClause[0]
         

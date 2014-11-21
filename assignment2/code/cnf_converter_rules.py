@@ -64,32 +64,27 @@ def move_not_inwards(sentence):
 # applies distributivity law distributing 'or's over 'and's wherever possible 
 def distribute(sentence):
     if not isAtomic(sentence):
-        if sentence[0] == 'not': # just check first operand
-            if not isAtomic(sentence[1]):
-                new1 = distribute(sentence[1])
-                sentence = (sentence[0], new1)
-        else:
-            # check if first operand is atomic
-            if not isAtomic(sentence[1]):
-                new1 = distribute(sentence[1])
-                sentence = (sentence[0], new1, sentence[2])
-            # check if second operand is atomic
-            if not isAtomic(sentence[2]):
-                new2 = distribute(sentence[2])
-                sentence = (sentence[0], sentence[1], new2)
-            
-            if not isAtomic(sentence[1]) and sentence[0] == 'or':
-                if sentence[1][0] == 'and':
-                    a = sentence[1][1]
-                    b = sentence[1][2]
-                    c = sentence[2]
-                    return distribute(('and',('or',c,a),('or',c,b)))                                    
-            elif not isAtomic(sentence[2]) and sentence[0] == 'or':
-                if sentence[2][0] == 'and':
-                    a = sentence[2][1]
-                    b = sentence[2][2]
-                    c = sentence[1]
-                    return distribute(('and',('or',c,a),('or',c,b)))     
+        # check if first operand is atomic
+        if not isAtomic(sentence[1]):
+            new1 = distribute(sentence[1])
+            sentence = (sentence[0], new1, sentence[2])
+        # check if second operand is atomic
+        if not isAtomic(sentence[2]):
+            new2 = distribute(sentence[2])
+            sentence = (sentence[0], sentence[1], new2)
+        
+        if not isAtomic(sentence[1]) and sentence[0] == 'or':
+            if sentence[1][0] == 'and':
+                a = sentence[1][1]
+                b = sentence[1][2]
+                c = sentence[2]
+                return distribute(('and',('or',c,a),('or',c,b)))                                    
+        elif not isAtomic(sentence[2]) and sentence[0] == 'or':
+            if sentence[2][0] == 'and':
+                a = sentence[2][1]
+                b = sentence[2][2]
+                c = sentence[1]
+                return distribute(('and',('or',c,a),('or',c,b)))     
     return sentence
 
 def simplify(sentence,userOption):
