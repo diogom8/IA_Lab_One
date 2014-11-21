@@ -1,9 +1,7 @@
-###############################
-#       DEFINITIONS
-###############################
 from cnf_converter_rules import *
 from cnf_converter_auxiliary import *
 import sys
+
 if len(sys.argv) == 2:
         filename = str(sys.argv[1])
 else:
@@ -26,6 +24,7 @@ def readfile(filename):
         quit()
     return sentences
 
+# Conjunctive Normal Form Algorithm
 def cnf(sentence,userOption):
     prev_sentence = sentence
     #Step-by step way
@@ -73,8 +72,7 @@ while(run):
     print '3. List all sentences after conversion\n'
     print '4. Save to file\n'
     print '5. Exit\n'
-    userOption = raw_input('> ')
-    
+    userOption = raw_input('> ')   
     
     if userOption == '1':
         for i in range(len(sentences)):
@@ -119,6 +117,4 @@ while(run):
         
     else:
         print 'Only single-digit numbers (1-5) are allowed\n'
-        
-    
     

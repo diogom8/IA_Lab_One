@@ -1,12 +1,12 @@
-###################################
-#       CNF Converter Auxiliary   #
-###################################
+#######################################
+# CNF Converter Auxiliary Functions   #
+#######################################
+
 # checks if s is atomic
 def isAtomic(s):
     if isinstance(s, basestring) or (s[0] == 'not' and isinstance(s[1], basestring)):
         return True
     return False
-
 
 # printing in user-friendly way
 def fancyPrint(s):
@@ -24,8 +24,6 @@ def fancyPrint(s):
             return printMap['not']+s[1]
         else:
             return s
-    
-
 
 #Return logical not of input literal    
 def notliteral(literal):
@@ -34,6 +32,7 @@ def notliteral(literal):
     else:
         literal = ('not',literal[0])
     return literal    
+
 #Return sentence in intended output format. Input: list of clauses in set format       
 def outputFormat(clauses):
     outputClause = []
