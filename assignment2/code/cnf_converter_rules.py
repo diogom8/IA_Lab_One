@@ -87,44 +87,16 @@ def distribute(sentence):
                 return distribute(('and',('or',c,a),('or',c,b)))     
     return sentence
 
-def simplify(sentence,userOption):
-    fifo_sentence = [sentence]
-    fifo_clause = []
-    clauses = []
-    NliteralsBefore = 0
-    i = 0
-    while len(fifo_sentence) != 0:
-        if fifo_sentence[0][0] == 'and':
-            fifo_sentence.extend([fifo_sentence[0][1],fifo_sentence[0][2]])
-            
-        elif isAtomic(fifo_sentence[0]):
-            clauses.append(set([]))
-            clauses[i].add(fifo_sentence[0])
-            i+=1
-            NliteralsBefore += 1
-        else:
-            clauses.append(set([]))
-            fifo_clause.extend([fifo_sentence[0][1],fifo_sentence[0][2]])
-            while len(fifo_clause) != 0:
-                if isAtomic(fifo_clause[0]):
-                    clauses[i].add(fifo_clause[0])
-                    NliteralsBefore += 1
-                else:
-                    fifo_clause.extend([fifo_clause[0][1],fifo_clause[0][2]])
-                
-                fifo_clause.pop(0)
-            i+=1
-
-
-        fifo_sentence.pop(0)
-        NliteralsAfter = 0
-        for x in clauses:
-            NliteralsAfter += len(x)
+def simplify(clauses,NliteralsBefore,userOption):
+    
+    #Simplification 1: Remove repeated literals in clauses (performed when sets are defined)    
+    NliteralsAfter = 0
+    for x in clauses:
+        NliteralsAfter += len(x)
         
-    #Simplification 1: Remove repeated literals in clauses (performed when sets are defined)
     if userOption == '2' and NliteralsBefore != NliteralsAfter:
         print '\n\nStep: Remove repeated literals in clauses\n'
-        print fancyPrint(outputFormat(clauses))
+        print clauses
     
 
 
@@ -148,7 +120,7 @@ def simplify(sentence,userOption):
         
     if userOption == '2' and len(clauseToRemove) != 0:
         print '\n\nStep: Erase clauses with inverse literals\n'
-        print fancyPrint(outputFormat(clauses))
+        print clauses
     
     
 
@@ -168,7 +140,7 @@ def simplify(sentence,userOption):
     
     if userOption == '2' and len(indexToRemove) != 0:
         print '\n\nStep: Remove supersets or equal sets within clauses\n'
-        print fancyPrint(outputFormat(clauses))
+        print clauses
     
                 
     #Simplification 4: Remove inverse clauses
@@ -184,8 +156,8 @@ def simplify(sentence,userOption):
    
     if userOption == '2' and clauses == [set(['false'])]:
         print '\n\nStep: Clean impossible sentences in case of inverse clauses\n'
-        print fancyPrint(outputFormat(clauses))
+        print clauses
             
     
     
-    return outputFormat(clauses)
+    return clauses

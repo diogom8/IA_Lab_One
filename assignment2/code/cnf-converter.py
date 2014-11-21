@@ -42,17 +42,28 @@ def cnf(sentence,userOption):
         prev_sentence = sentence
                 
         sentence = distribute(sentence)
+
+        #Conversion to list of disjunctions
+        clausesList,NliteralsBefore = convert2list(sentence) 
         if prev_sentence != sentence:        
             print '\n\nStep: Distributivity Law\n'
             print fancyPrint(sentence)
-        sentence = simplify(sentence,userOption)
+            
+               
+        clausesList = simplify(clausesList,NliteralsBefore,userOption)
+
+        print '\n\nFinal Output\n'
+        print clausesList
     #No step-by-step way
     else:
         sentence = eliminate_implications(sentence)
         sentence = move_not_inwards(sentence)
         sentence = distribute(sentence)
-        sentence = simplify(sentence,userOption)
-    return sentence
+
+        #Conversion to list of disjunctions
+        clausesList,NliteralsBefore = convert2list(sentence) 
+        clausesList = simplify(clausesList,NliteralsBefore,userOption)
+    return clausesList
 
 ###############################
 #          MAIN               #
@@ -76,12 +87,12 @@ while(run):
     
     if userOption == '1':
         for i in range(len(sentences)):
-            print 'Clause '+str(i)+': '+fancyPrint(sentences[i])
+            print 'Sentence '+str(i)+': '+fancyPrint(sentences[i])
         raw_input('\nPress to continue...') 
         
     elif userOption == '2':
         for i in range(len(sentences)):
-            print 'Clause '+str(i)+': '+fancyPrint(sentences[i])
+            print 'Sentence '+str(i)+': '+fancyPrint(sentences[i])
         try: 
             sentenceOption = int(raw_input('Pick option> '))
             if sentenceOption < len(sentences):
@@ -96,17 +107,18 @@ while(run):
     elif userOption == '3':
         for i in range(len(sentences)):
             CNFsentences.append(cnf(sentences[i],'3'))
-            print 'Clause '+str(i)+': '+fancyPrint(CNFsentences[i])
+            print 'Sentence '+str(i)+': '+str(CNFsentences[i])
         raw_input('\nPress to continue...')    
             
     
     elif userOption == '4':
         outFileName = raw_input('\nInsert filename: ')        
         fo = open(outFileName+'.txt', "w")
+        #If simplification not performed yet
         if CNFsentences == []:
             for i in range(len(sentences)):
                 CNFsentences.append(cnf(sentences[i],'3'))
-        
+        #Write to file
         for sentence in CNFsentences:
             fo.write(str(sentence)+'\n')
         fo.close()
