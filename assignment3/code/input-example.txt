@@ -1,0 +1,4 @@
+-KB-
+[set(['A','E']),set([('not','A'),'C'])]
+-SentenceToProve-
+('and',('or','E','C'),('or','F','C'))
