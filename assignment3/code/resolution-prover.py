@@ -1,12 +1,8 @@
 from cnf_converter_rules import *
 from cnf_converter_auxiliary import *
 import sys
-#if len(sys.argv) == 2:
-#        filename = str(sys.argv[1])
-#else:
-#        print "\n\n ERROR: Please insert one correct filename\n\n"
-#        exit()
-filename = 'input-example.txt'
+
+#filename = 'input-example-3.txt'
 
 ###############################
 #       FUNCTIONS             #
@@ -14,28 +10,28 @@ filename = 'input-example.txt'
 
 # reads a list of tuples from file
 def readfile(filename):
-    KB = []            
-    sentence = []
     try:
-        f = open(filename)
-        lines = f.readlines()
-        #Read KB
-        KB = (eval(lines[1]))
-        #Read sentence to prove
-        sentence = (eval(lines[3]))
+        with open(filename) as f:
+            sentences = []
+            for line in f:
+                try:
+                    sentences.append(eval(line))
+                except:
+                    print 'Invalid line on File'
+                    quit()
     except IOError:
         print 'ERROR: File "' + filename + '" does not exist!'
         quit()
-    return KB,sentence
+    return sentences
 
+# convert to cnf
 def cnf(sentence):
     
     sentence = eliminate_implications(sentence)
     sentence = move_not_inwards(sentence)
     sentence = distribute(sentence)
-
     #Conversion to list of disjunctions
-    clausesList,NliteralsBefore = convert2list(sentence) 
+    clausesList,NliteralsBefore = convert2list(sentence)
     clausesList = simplify(clausesList,NliteralsBefore,'3')
     return clausesList
 
@@ -43,22 +39,22 @@ def getKey(item):
     return len(item)
 
 def ResolutionLoop(UNION):
-
+    print 'union:', UNION, '\n'
     NewClauses = True
     while(NewClauses):
         NewClauses = False
         #unit preference heuristic
         UNION.sort(key = getKey)
+        
         NumberOfLiterals = countLiterals(UNION)
         for i in range(NumberOfLiterals):
             for j in range(i+1,len(UNION)):
                 result = resolution(UNION[i],UNION[j])
-                
                 if result != [UNION[i],UNION[j]]:
                     if result == set([]):
                         return True
                     else: #Result is some new conclusion
-                        UNION.remove(UNION[j])
+                        UNION.remove(UNION[j]) # CORRECTO?
                         UNION.append(result)
                         NewClauses = True
                         break
@@ -83,30 +79,120 @@ def resolution(X,Y):
         return Y.difference(notX)
     else:
         return [X,Y]       
-    
+
+def init_resolution(sentence):
+    while sentence:
+        # append negated sentence to knowledge base
+        for literal in sentence[len(sentence)-1]:
+            KB.append(set([notliteral(literal)]))
+        
+        # apply resolution
+        if ResolutionLoop(KB) == False:
+            return 'False'   
+        elif len(sentence) == 1:
+            return 'True'
+        else:
+            sentence.pop()
+ 
 ###############################
 #          MAIN               #
 ###############################
 
-#From Reading one may get a list of clauses for KB (KB) and
-# a sentence to prove (sentence)
-KB,sentence = readfile(filename)
+# Read file from terminal
+if len(sys.argv) == 2:
+        filename = str(sys.argv[1])
+else:
+        print "\n\n ERROR: Please insert one correct filename\n\n"
+        exit()
 
-#Convert sentence to prove to CNF format
-sentence = cnf(sentence)
-#From now on, sentence is a list of clauses
-while sentence:
-    UNION = list(KB)
-    
-    for literal in list(sentence[len(sentence)-1]):
-        UNION.append(set([notliteral(literal)]))
-    
+# Get list of sentences and print them
+sentences = readfile(filename)
 
-    if ResolutionLoop(UNION) == False:
-        print 'False'
-        break    
-    elif len(sentence) == 1:
-        print 'True'
-        break
+for i in range(len(sentences)):
+    print i+1,')', fancyPrint(sentences[i])
+
+# Select KB and sentence to prove
+next = False
+print 'Select Knowledge Base:'
+while not next:
+    userOption = raw_input('> ') 
+    try:
+        option = eval(userOption)-1  
+    except:
+        print 'Insert a valid option'
+        option = -2
+    if option != -2:
+        if option not in range(len(sentences)):
+            print 'Insert a valid option'
+        else:
+            KB = cnf(sentences[option])
+            next = True
+
+next = False
+print 'Select sentence to prove:'
+while not next:
+    userOption = raw_input('> ') 
+    try:
+        option = eval(userOption)-1
+    except:
+        print 'Insert a valid option'
+        option = -2
+    if option != -2:
+        if option not in range(len(sentences)):
+            print 'Insert a valid option'
+        else:
+            sentence = cnf(sentences[option])
+            next = True
+
+# Main MENU
+run = True
+
+while(run):
+    print '\n##############'
+    print '#### MENU ####'
+    print '##############\n'
+    print '1. List Knowledge Base and Sentence to Prove\n'
+    print '2. Prove using Resolution\n'
+    print '3. Prove using Resolution (step by step)\n'
+    print '4. Save to file\n'
+    print '5. Save to file (using Resolution step by step)\n'
+    print '6. Exit\n'
+    userOption = raw_input('> ')   
+    
+    if userOption == '1':
+        print 'KB:', KB
+        print 'Sentence:', sentence
+        #print 'KB:', fancyPrint(KB)
+        #print 'Sentence:', fancyPrint(sentence)
+        raw_input('\nPress to continue...')
+        
+    elif userOption == '2':
+        print init_resolution(sentence)
+        raw_input('\nPress to continue...')
+        
+    elif userOption == '3':
+        print 'under construction'
+        raw_input('\nPress to continue...')    
+            
+    
+    elif userOption == '4':
+        outFileName = raw_input('\nInsert filename: ')        
+        fo = open(outFileName+'.txt', "w")
+        print init_resolution(sentence)
+        
+        #Write to file
+        fo.write(init_resolution(sentence) + '\n')
+        fo.close()
+        raw_input('\nPress to continue...')
+
+    elif userOption == '5':
+        print 'under construction'
+        raw_input('\nPress to continue...')
+
+    elif userOption == '6':
+        print 'Exiting!'
+        run = False;
+        
     else:
-        sentence.pop()
+        print 'Invalid option\n'
+        raw_input('\nPress to continue...')

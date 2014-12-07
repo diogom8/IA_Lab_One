@@ -30,7 +30,7 @@ def notliteral(literal):
     if literal[0] == 'not':
         literal = literal[1]
     else:
-        literal = ('not',literal[0])
+        literal = ('not', literal)
     return literal
 
 #Converts sentence in input format to a list of clauses(defined as sets of literals)
