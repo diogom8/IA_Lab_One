@@ -54,8 +54,8 @@ def ResolutionLoop(UNION):
                     if result == set([]):
                         return True
                     else: #Result is some new conclusion
-                        UNION.remove(UNION[j]) # CORRECTO?
-                        UNION.append(result)
+                        UNION.pop(j) # CORRECTO? 
+                        UNION.insert(j,result)
                         NewClauses = True
                         break
                     
@@ -93,7 +93,11 @@ def init_resolution(sentence):
             return 'True'
         else:
             sentence.pop()
- 
+def SPORTING3_1BOAVISTA(SetFormat):
+    ListFormat = []
+    for item in SetFormat:
+        ListFormat.append(list(item))
+    return ListFormat
 ###############################
 #          MAIN               #
 ###############################
