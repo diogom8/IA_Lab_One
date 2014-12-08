@@ -1,6 +1,8 @@
 from cnf_converter_rules import *
 from cnf_converter_auxiliary import *
 import sys
+import copy
+import StringIO
 
 #filename = 'input-example-3.txt'
 
@@ -38,8 +40,8 @@ def cnf(sentence):
 def getKey(item):
     return len(item)
 
+# Resolution loop
 def ResolutionLoop(UNION):
-    print 'union:', UNION, '\n'
     NewClauses = True
     while(NewClauses):
         NewClauses = False
@@ -54,24 +56,58 @@ def ResolutionLoop(UNION):
                     if result == set([]):
                         return True
                     else: #Result is some new conclusion
-                        UNION.pop(j) # CORRECTO? 
+                        UNION.pop(j)
                         UNION.insert(j,result)
                         NewClauses = True
                         break
                     
             if NewClauses:
-                break
-                                    
-                       
+                break             
     return False
 
+# Resolution loop - Step by Step
+def ResolutionLoopSbS(UNION):
+    output = StringIO.StringIO()
+    NewClauses = True
+    while(NewClauses):
+        NewClauses = False
+        print >>output, 'Result:', los2lol(UNION), '\n'
+        #unit preference heuristic
+        print >>output, 'Apply Unit Preference Heuristic'
+        UNION.sort(key = getKey)
+        print >>output, 'Result:', los2lol(UNION), '\n'
+        
+        NumberOfLiterals = countLiterals(UNION)
+        for i in range(NumberOfLiterals):
+            for j in range(i+1,len(UNION)):
+                print >>output, ("Apply Resolution - C%d + C%d" % (i+1,j+1))
+                result = resolution(UNION[i],UNION[j])
+                if result != [UNION[i],UNION[j]]:
+                    if result == set([]):
+                        print >>output, 'Result: [] \n'
+                        print >>output, 'CONCLUSION: Sentence can be proven from KB\n'
+                        return True, output
+                    else: #Result is some new conclusion
+                        UNION.pop(j)
+                        UNION.insert(j,result)
+                        NewClauses = True
+                        break
+                print >>output, 'Result:', los2lol(UNION), '\n'
+                
+            if NewClauses:
+                break
+    print >>output, 'CONCLUSION: Sentence can\'t be proven from KB\n'             
+    return False, output
+
+# Count number of literals in UNION
 def countLiterals(UNION):
     SUM = 0
     for item in UNION:
         if len(item) == 1:
             SUM += 1
     return SUM
-   
+
+# Resolution algorithm   
 def resolution(X,Y):
     notX = set([notliteral(list(X)[0])])
     
@@ -80,24 +116,50 @@ def resolution(X,Y):
     else:
         return [X,Y]       
 
-def init_resolution(sentence):
-    while sentence:
-        # append negated sentence to knowledge base
-        for literal in sentence[len(sentence)-1]:
-            KB.append(set([notliteral(literal)]))
-        
-        # apply resolution
-        if ResolutionLoop(KB) == False:
-            return 'False'   
-        elif len(sentence) == 1:
-            return 'True'
+# Initial procedures to start resolution
+def init_resolution(KB, alpha, StepByStep, SaveToFile):   
+    # Compute Union
+    Union = copy.deepcopy(KB)
+    for literal in sentence[len(sentence)-1]:
+        Union.append(set([notliteral(literal)]))
+    
+    while alpha:       
+        # Apply Resolution Step by Step
+        if StepByStep:
+            result, output = ResolutionLoopSbS(Union)
+            
+            if SaveToFile: # save output to file
+                outFileName = raw_input('\nInsert filename: ')        
+                fo = open(outFileName+'.txt', "w")                
+                #Write to file
+                fo.write(output.getvalue())
+                fo.close()                
+            else: # print output to terminal
+                print output.getvalue()
+            output.close()
+            
+            if result == False:
+                return 'False'   
+            elif len(alpha) == 1:
+                return 'True'
+            else:
+                alpha.pop()
+        # Apply Resolution
         else:
-            sentence.pop()
-def SPORTING3_1BOAVISTA(SetFormat):
+            if ResolutionLoop(Union) == False:
+                return 'False'   
+            elif len(alpha) == 1:
+                return 'True'
+            else:
+                alpha.pop()
+
+# Convert list of sets to list of lists
+def los2lol(SetFormat):
     ListFormat = []
     for item in SetFormat:
         ListFormat.append(list(item))
     return ListFormat
+    
 ###############################
 #          MAIN               #
 ###############################
@@ -155,27 +217,25 @@ while(run):
     print '\n##############'
     print '#### MENU ####'
     print '##############\n'
-    print '1. List Knowledge Base and Sentence to Prove\n'
-    print '2. Prove using Resolution\n'
-    print '3. Prove using Resolution (step by step)\n'
-    print '4. Save to file\n'
-    print '5. Save to file (using Resolution step by step)\n'
+    print '1. List Knowledge Base and Sentence to Prove'
+    print '2. Prove using Resolution'
+    print '3. Prove using Resolution (step by step)'
+    print '4. Save to file'
+    print '5. Save to file (using Resolution step by step)'
     print '6. Exit\n'
     userOption = raw_input('> ')   
     
     if userOption == '1':
-        print 'KB:', KB
-        print 'Sentence:', sentence
-        #print 'KB:', fancyPrint(KB)
-        #print 'Sentence:', fancyPrint(sentence)
+        print 'KB: \t\t', los2lol(KB)
+        print 'Sentence: \t', los2lol(sentence)
         raw_input('\nPress to continue...')
         
     elif userOption == '2':
-        print init_resolution(sentence)
+        print init_resolution(KB, sentence, False, False)
         raw_input('\nPress to continue...')
         
     elif userOption == '3':
-        print 'under construction'
+        print init_resolution(KB, sentence, True, False)
         raw_input('\nPress to continue...')    
             
     
@@ -190,7 +250,7 @@ while(run):
         raw_input('\nPress to continue...')
 
     elif userOption == '5':
-        print 'under construction'
+        init_resolution(KB, sentence, True, True)
         raw_input('\nPress to continue...')
 
     elif userOption == '6':
