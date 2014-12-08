@@ -69,9 +69,9 @@ def ResolutionLoop(UNION):
 def ResolutionLoopSbS(UNION):
     output = StringIO.StringIO()
     NewClauses = True
+    print >>output, 'Union:', los2lol(UNION), '\n'
     while(NewClauses):
         NewClauses = False
-        print >>output, 'Result:', los2lol(UNION), '\n'
         #unit preference heuristic
         print >>output, 'Apply Unit Preference Heuristic'
         UNION.sort(key = getKey)
@@ -80,9 +80,9 @@ def ResolutionLoopSbS(UNION):
         NumberOfLiterals = countLiterals(UNION)
         for i in range(NumberOfLiterals):
             for j in range(i+1,len(UNION)):
-                print >>output, ("Apply Resolution - C%d + C%d" % (i+1,j+1))
                 result = resolution(UNION[i],UNION[j])
                 if result != [UNION[i],UNION[j]]:
+                    print >>output, ("Apply Resolution - C%d + C%d" % (i+1,j+1))
                     if result == set([]):
                         print >>output, 'Result: [] \n'
                         print >>output, 'CONCLUSION: Sentence can be proven from KB\n'
@@ -90,9 +90,9 @@ def ResolutionLoopSbS(UNION):
                     else: #Result is some new conclusion
                         UNION.pop(j)
                         UNION.insert(j,result)
+                        print >>output, 'Result:', los2lol(UNION), '\n'
                         NewClauses = True
                         break
-                print >>output, 'Result:', los2lol(UNION), '\n'
                 
             if NewClauses:
                 break
@@ -235,17 +235,17 @@ while(run):
         raw_input('\nPress to continue...')
         
     elif userOption == '3':
-        print init_resolution(KB, sentence, True, False)
+        init_resolution(KB, sentence, True, False)
         raw_input('\nPress to continue...')    
             
     
     elif userOption == '4':
+        print init_resolution(KB, sentence, False, False)
         outFileName = raw_input('\nInsert filename: ')        
         fo = open(outFileName+'.txt', "w")
-        print init_resolution(sentence)
         
         #Write to file
-        fo.write(init_resolution(sentence) + '\n')
+        fo.write(init_resolution(KB, sentence, False, False) + '\n')
         fo.close()
         raw_input('\nPress to continue...')
 
