@@ -1,0 +1,44 @@
+% Define block styles
+\tikzstyle{initBlock} = [draw, draw, fill=blue!20, 
+    text width=4.5em, text badly centered, node distance=3cm, inner sep=0pt, minimum width=6em, minimum height=5em]
+\tikzstyle{block} = [rectangle, draw, fill=red!20, 
+    text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, -latex']
+\tikzstyle{cloud} = [draw, ellipse,fill=orange!20, node distance=3cm,
+    minimum height=2em]
+    
+\begin{tikzpicture}[node distance = 2cm, auto]
+    % Place nodes
+    \node [initBlock] (init) {Move 'not' inwards function};
+    \node [block, below of=init] (sentatomic) {Is sentence atomic?};
+    \node [cloud, right of=sentatomic, node distance=6cm] (return) {return};
+    \node [block, below of=sentatomic] (opnot) {Operator = 'not'?};
+    \node [block, below of=opnot] (lowSent) {Is lower sentence atomic?};
+    \node [block, below of=lowSent] (lowOpNot) {Lower Operator = 'not'?};
+	\node [block, below of=lowOpNot] (lowOpAnd) {Lower Operator = 'and'?};
+	\node [block, below of=lowOpAnd] (lowOpOr) {Lower Operator = 'or'};
+    \node [block, right of=lowOpNot, node distance=3cm] (notnotA) {$\neg\neg A = A$};
+	\node [block, right of=lowOpAnd, node distance=3cm] (morgan1) {$\neg (A \wedge B) = (\neg A \vee \neg B)$};
+	\node [block, right of=lowOpOr, node distance=3cm] (morgan2) {$\neg (A \vee B) = (\neg A \wedge \neg B)$};
+	\node [block, right of=opnot, node distance=3cm] (sents) {Check if left and right side sentences are atomic.};
+	\node [cloud, right of=lowSent, node distance=6cm] (recursive) {recursive};
+    % Draw edges
+    \path [line] (init) -- (sentatomic);
+    \path [line] (sentatomic) -- node {no} (opnot);
+    \path [line] (sentatomic) -- node {yes} (return);
+    \path [line] (opnot) -- node {yes} (lowSent);
+    \path [line] (opnot) -- node {no} (sents);
+    	\path [line] (sents) -- node {yes} (return);
+    	\path [line] (sents) -- node {no} (recursive);
+    \path [line] (lowSent) -- node {yes} (lowOpNot);
+    \path [line] (lowSent) -- node {no} (recursive);
+	\path [line] (lowOpNot) --  node {no} (lowOpAnd);
+	\path [line] (lowOpAnd) --  node {no} (lowOpOr);
+    \path [line] (lowOpNot) -- node {yes} (notnotA);
+    \path [line] (lowOpAnd) -- node {yes} (morgan1);
+    \path [line] (lowOpOr) -- (morgan2);
+    \path [line] (notnotA) -| (recursive);
+	\path [line] (morgan1) -| (recursive);
+	\path [line] (morgan2) -| (recursive);
+	\path [line] (recursive) -- (return);
+\end{tikzpicture}
