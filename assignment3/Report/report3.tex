@@ -4,6 +4,8 @@
 \usepackage{xcolor}
 \newcommand\todo[1]{\textcolor{red}{[#1]}}
 
+\usepackage{listings}
+
 \usepackage{tikz}
 \usetikzlibrary{shapes,arrows}
 
@@ -76,81 +78,12 @@ pdfkeywords={Computer Society, IEEEtran, journal, LaTeX, paper,
 \begin{document}
 %
 % paper title
-\title{Artificial Intelligence and Decision Systems: Assignment \#3 - Resolution-based Theorem Prover}
+\title{Artificial Intelligence and Decision Systems: Assignment \#3}
 
 
 \author{D. Monteiro (70125),$^\dagger$\thanks{$^\dagger$ MSc. student of Aerospace Engineering, Instituto Superior Técnico, Lisbon, Portugal. Student Nr: $70125$}, R.F. Santos (69278)$^\ddagger$\thanks{$^\ddagger$ MSc. student of Aerospace Engineering, Instituto Superior Técnico, Lisbon, Portugal. Student Nr: $69278$}\\[.2 cm]
 \textit{University of Lisbon, Lisbon, Portugal}}% <-this % stops a space
      
-        
-%\IEEEcompsocitemizethanks{\IEEEcompsocthanksitem D. Monteiro, Aerospace Engineering Student in Instituto Superior Técnico, Lisbon, Portugal. Number 70125.\protect\\
-% note need leading \protect in front of \\ to get a newline within \thanks as
-% \\ is fragile and will error, could use \hfil\break instead.
-%E-mail: diogo\_monteiro\_1$@$hotmail.com
-
-%\IEEEcompsocthanksitem R. Santos, Aerospace Engineering Student in Instituto Superior Técnico, Lisbon, Portugal. Number 69278.\protect\\
-% note need leading \protect in front of \\ to get a newline within \thanks as
-% \\ is fragile and will error, could use \hfil\break instead.
-%E-mail: rafael.j.f.santos$@$tecnico.ulisboa.pt}}
-
-% note the % following the last \IEEEmembership and also \thanks - 
-% these prevent an unwanted space from occurring between the last author name
-% and the end of the author line. i.e., if you had this:
-% 
-% \author{....lastname \thanks{...} \thanks{...} }
-%                     ^------------^------------^----Do not want these spaces!
-%
-% a space would be appended to the last name and could cause every name on that
-% line to be shifted left slightly. This is one of those "LaTeX things". For
-% instance, "\textbf{A} \textbf{B}" will typeset as "A B" not "AB". To get
-% "AB" then you have to do: "\textbf{A}\textbf{B}"
-% \thanks is no different in this regard, so shield the last } of each \thanks
-% that ends a line with a % and do not let a space in before the next \thanks.
-% Spaces after \IEEEmembership other than the last one are OK (and needed) as
-% you are supposed to have spaces between the names. For what it is worth,
-% this is a minor point as most people would not even notice if the said evil
-% space somehow managed to creep in.
-
-
-
-% The paper headers
-%\markboth{Journal of \LaTeX\ Class Files,~Vol.~11, No.~4, December~2012}%
-%{Shell \MakeLowercase{\textit{et al.}}: Bare Advanced Demo of IEEEtran.cls for Journals}
-
-%\markboth{wadaw}%
-%Shell \MakeLowercase{\textit{et al.}}: Artificial Intelligence and Decision Systems}
-
-
-% The only time the second header will appear is for the odd numbered pages
-% after the title page when using the twoside option.
-% 
-% *** Note that you probably will NOT want to include the author's ***
-% *** name in the headers of peer review papers.                   ***
-% You can use \ifCLASSOPTIONpeerreview for conditional compilation here if
-% you desire.
-
-
-
-% The publisher's ID mark at the bottom of the page is less important with
-% Computer Society journal papers as those publications place the marks
-% outside of the main text columns and, therefore, unlike regular IEEE
-% journals, the available text space is not reduced by their presence.
-% If you want to put a publisher's ID mark on the page you can do it like
-% this:
-%\IEEEpubid{0000--0000/00\$00.00~\copyright~2012 IEEE}
-% or like this to get the Computer Society new two part style.
-%\IEEEpubid{\makebox[\columnwidth]{\hfill 0000--0000/00/\$00.00~\copyright~2012 IEEE}%
-%\hspace{\columnsep}\makebox[\columnwidth]{Published by the IEEE Computer Society\hfill}}
-% Remember, if you use this you must call \IEEEpubidadjcol in the second
-% column for its text to clear the IEEEpubid mark (Computer Society journal
-% papers don't need this extra clearance.)
-
-
-
-% use for special paper notices
-%\IEEEspecialpapernotice{(Invited Paper)}
-
-
 
 % for Computer Society papers, we must declare the abstract and index terms
 % PRIOR to the title within the \IEEEtitleabstractindextext IEEEtran
@@ -186,11 +119,13 @@ resolution theorem, propositional logic, clausal normal form, CNF, knowledge bas
 % creates the second title. It will be ignored for other modes.
 \IEEEpeerreviewmaketitle
 
-
-
 \section{Introduction}
 
-\IEEEPARstart{T}{he} aim of the present short report is to ...
+\IEEEPARstart{T}{he} aim of the present short report is to describe the results obtained for the Assignment \#3 which aimed the creation of a resolution-based theorem prover for propositional logic. This assignments is an continuation of the previous one, where a Clausal Normal Form (CNF) converter was made. This way, it is assumed that the given knowledge base and sentence to prove is already in the CNF form.
+
+This report will start with the discussion of the resolution theorem prover, particularly its algorithm and implementation. After that, there will be some complementary remarks and conclusions.
+
+The code was made using \textsc{Python} v2.7 released for \textsc{Unix} operating systems.
 
 \hfill 
  
@@ -200,9 +135,35 @@ resolution theorem, propositional logic, clausal normal form, CNF, knowledge bas
 
 
 
-
 \section{Complementary Remarks}
 
+\subsection{User Interface}
+
+To run the program, the user should insert the file name from where he wants to load a list of sentences. In this file, the sentences must have the same form as they had in the inputs for the previous assignment.
+
+To run the program in a Linux based operative system, the following command should be inserted in the terminal:
+
+\noindent
+\begin{lstlisting}[language=bash]
+  $ python resolution-prover.py [file]
+\end{lstlisting}
+
+Where \texttt{[file]} must be replaced by the filename.
+
+The program starts listing all the sentences read from the file and the user is asked to select the Knowledge Base and the sentence to be proven.
+
+After this, a menu is presented with several options. The first one lists the knowledge base and sentence selected previously. The second option applies the resolution algorithm and outputs \texttt{True} when the sentence can be proven from the KB and \texttt{False} otherwise. The third option does the same as the second, but also asks for the name of the file where the user wants to save the result.
+
+The fourth option applies the algorithm listing step by step the operations executed. The result of the application of the unit preference heuristic is shown on the terminal as well as the result of the application of the resolution algorithm to two clauses from the knowledge base.
+
+The fifth option does the same as the fourth, but saves the output to a file, and the last option exits the program.
+
+
+\subsection{Discussion}
+
+While developing the code for this assignment, one of the aspects taken into account was to try to provide a readable and clean output. For this end, the function developed in the previous assignment to convert the sentences to a more human readable way was used to present the sentences read from the file. Besides that, the step by step resolution just presented as an output the result of the application of resolution when the list of clauses was changed.
+
+The resolution-based theorem prover developed was tested for several different knowledge bases, with different degrees of complexity, and proved to behave efficiently and provide correct results for all those cases.
 
 
 
