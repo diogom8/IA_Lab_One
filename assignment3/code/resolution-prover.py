@@ -118,12 +118,13 @@ def resolution(X,Y):
 
 # Initial procedures to start resolution
 def init_resolution(KB, alpha, StepByStep, SaveToFile):   
-    # Compute Union
-    Union = copy.deepcopy(KB)
-    for literal in sentence[len(sentence)-1]:
-        Union.append(set([notliteral(literal)]))
-    
-    while alpha:       
+    alpha = copy.deepcopy(alpha); 
+    while alpha:
+        # Compute Union
+        Union = copy.deepcopy(KB)
+        #Negate clause literals and append to KB
+        for literal in alpha[len(alpha)-1]:
+            Union.append(set([notliteral(literal)]))       
         # Apply Resolution Step by Step
         if StepByStep:
             result, output = ResolutionLoopSbS(Union)
