@@ -18,6 +18,7 @@
   \renewcommand\thefigure{\Alph{section}\arabic{figure}}
   \renewcommand\thetable{\Alph{section}\arabic{table}}
 }
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
 
 % *** CITATION PACKAGES ***
 %
@@ -121,7 +122,7 @@ resolution theorem, propositional logic, clausal normal form, CNF, knowledge bas
 
 \section{Introduction}
 
-\IEEEPARstart{T}{he} aim of the present short report is to describe the results obtained for the Assignment \#3 which aimed the creation of a resolution-based theorem prover for propositional logic. This assignments is an continuation of the previous one, where a Clausal Normal Form (CNF) converter was made. This way, it is assumed that the given knowledge base and sentence to prove is already in the CNF form.
+\IEEEPARstart{T}{he} aim of the present short report is to describe the results obtained for the Assignment \#3 which aimed the creation of a resolution-based theorem prover for propositional logic. This assignment is a continuation of the previous one, where a Clausal Normal Form (CNF) converter was made. This way, it is assumed that the given knowledge base and sentence to prove is already in the CNF form.
 
 This report will start with the discussion of the resolution theorem prover, particularly its algorithm and implementation. After that, there will be some complementary remarks and conclusions.
 
@@ -132,6 +133,22 @@ The code was made using \textsc{Python} v2.7 released for \textsc{Unix} operatin
 \hfill \today
 
 \section{Resolution Theorem Prover}
+The resolution theorem enables to prove propositional logical sentences given an assumed knowledge base.  In other words, it allows to conclude whether a propositional formula is satisfiable or unsatisfiable under that knowledge base. The main idea behind this technique of logical inference is to prove the unsatisfiability of the negated sentence which one aims to prove. This form of theorem proving is generally referred as refutation.\\
+The implementation of the theorem prover in this assignment followed the algorithm presented as a block diagram in \ref{app:init_resolution}. Initially, the algorithm uses the CNF converter to generate a list of disjunctions for both the knowledge base (KB) and sentence to prove ($\alpha$). After that step, the reasoning was to investigate the validity of each clause in $\alpha$ independently. While each clause provides a \texttt{True} outcome, the routine keeps evaluating the following clauses until a point where one clause is not satisfied by the knowledge base or there are no more clauses to evaluate. The result obtained would be then \texttt{False} or \texttt{True}, respectively. This algorithm proved to be efficient observing that when a \texttt{False} is detected, the routine stops since the outcome of any other clause is irrelevant for the final result.\\
+As suggested in the assignment description, the unit preference heuristic was applied. With this strategy the algorithm gives preference to resolutions where at least one of the clauses is a single literal. This way it is always ensured that for any conclusive resolution the outcome is always a shorter clause. This strategy clearly helps to reach a conclusion faster, since our algorithm seeks for resolutions where a literal and its negated counterpart are involved, such that a final conclusion about the clause to prove can be arisen. It is also important to note that the application of this heuristic does not fail because with the inclusion of the clause to prove $\alpha_i$ in the knowledge base (see \ref{app:init_resolution}), it is guaranteed the presence of unit clauses even if KB does not contain any.
+In order to better understand the application of the unit preference heuristic and the reasoning behind the function \texttt{ResolutionLoop(Union)}, its general algorithm is presented here:\\
+
+\small
+\noindent\texttt{loop until no new clauses result from any pair of clauses in Union:
+\begin{enumerate}
+\item for each pair of clauses $C_i$, $C_j$ in Union
+\item result = Resolution($C_i$,$C_j$)
+\item if result contains the empty clause, return True
+\item elseif result is a shorter clause, add result to Union and pop $C_j$
+\end{enumerate}
+}
+\normalsize
+Note that in step \texttt{4)}, the \texttt{pop} is possible since in our algorithm the \texttt{$C_i$} clause is always a unit clause due to the heuristic applied. This means that the result if conclusive (i.e. a shorter clause) is a simplification of \texttt{$C_j$} and therefore the latter can be withdrawn from \texttt{Union}. \todo{better explain resolution}
 
 
 
@@ -198,7 +215,7 @@ S.~Russell and P.~Norvig, \emph{Atificial Intelligence - A Modern Approach}, 3rd
 
 %%%%%%%%%%%%%%%%%%%%%
 \appendix
-\section{Resolution Theorem Prover Algorithm} \label{app:resolutionloop}
+\section{Resolution Theorem Prover Algorithm - Function \texttt{init\_resolution(KB,$\alpha$,Flag,Flag)}} \label{app:init_resolution}
 \vfill
 \begin{figure}[h]
 \centering
@@ -211,8 +228,8 @@ S.~Russell and P.~Norvig, \emph{Atificial Intelligence - A Modern Approach}, 3rd
     \node [block, below of=CNF2] (pickClause) {Pick top clause of $\alpha \equiv\alpha_i$};
     \node [block, below of=pickClause,node distance=2.5cm] (negateLiterals) {Negate literals and define as unit clauses};
     \node [block, left of=negateLiterals,node distance=3cm] (union) {$\bigcup$\\(Union)};
-    \node [largerblock, below of=union,node distance=3cm] (resolution) {\texttt{ResolutionLoop()}};
-    \node [cloud, left of=resolution,node distance=5cm] (returnFalse) {Return \texttt{\textbf{False}}};
+    \node [largerblock, below of=union,node distance=3cm] (resolution) {\texttt{ResolutionLoop(Union)}};
+    \node [cloud, left of=resolution,node distance=6cm] (returnFalse) {Return \texttt{\textbf{False}}};
     \node [block, below of=resolution,node distance=3cm] (lastElement) {Is $\alpha_i$ last element of $\alpha$ ?};
     \node [block, right of=lastElement,node distance=4.5cm] (pop) {Pop clause $\alpha_i$};
     \node [cloud, below of=lastElement,node distance=2cm] (returnTrue) {Return \texttt{\textbf{True}}};
@@ -244,94 +261,7 @@ S.~Russell and P.~Norvig, \emph{Atificial Intelligence - A Modern Approach}, 3rd
 \newpage
 
 
-\section{Move 'not' inwards flow chart} \label{app:moveNotInwards}
-\vfill
-\begin{figure}[h]
-\centering
-\begin{tikzpicture}[node distance = 2cm, auto]
-    % Place nodes
-    \node [initBlock] (init) {Move 'not' inwards function};
-    \node [block, below of=init] (sentatomic) {Is sentence atomic?};
-    \node [cloud, right of=sentatomic, node distance=6cm] (return) {return};
-    \node [block, below of=sentatomic] (opnot) {Operator = 'not'?};
-    \node [block, below of=opnot] (lowSent) {Is lower sentence atomic?};
-    \node [block, below of=lowSent] (lowOpNot) {Lower Operator = 'not'?};
-	\node [block, below of=lowOpNot] (lowOpAnd) {Lower Operator = 'and'?};
-	\node [block, below of=lowOpAnd] (lowOpOr) {Lower Operator = 'or'};
-    \node [block, right of=lowOpNot, node distance=3cm] (notnotA) {$\neg\neg A = A$};
-	\node [block, right of=lowOpAnd, node distance=3cm] (morgan1) {$\neg (A \wedge B) = (\neg A \vee \neg B)$};
-	\node [block, right of=lowOpOr, node distance=3cm] (morgan2) {$\neg (A \vee B) = (\neg A \wedge \neg B)$};
-	\node [largerblock, right of=opnot, node distance=3cm] (sents) {Check if left and right side sentences are atomic.};
-	\node [cloud, right of=lowSent, node distance=6cm] (recursive) {recursive};
-	\node [cloud, left of=lowSent, node distance=3cm] (recursive2) {recursive};
-	\node [cloud, below of=lowOpOr, node distance = 2cm] (return2) {return};
-	%\node [largerblock, below of=lowSent, node distance=2.5cm] (lowOpAndOperations) {Check lower operator and do necessary operations};
 
-    % Draw edges
-    \path [line] (init) -- (sentatomic);
-    \path [line] (sentatomic) -- node {no} (opnot);
-    \path [line] (sentatomic) -- node {yes} (return);
-    \path [line] (opnot) -- node {yes} (lowSent);
-    \path [line] (opnot) -- node {no} (sents);
-    	\path [line] (sents) -| node [near start]{yes} (return);
-    	\path [line] (sents) |- node [near start]{no} (recursive);
-    \path [line] (lowSent) -- node {yes} (lowOpNot);
-    \path [line] (lowSent) -- node {no} (recursive2);
-    \path [line] (recursive2) |- (lowOpNot);
-    %\path [line] (lowOpAndOperations) -|(recursive);
-	\path [line] (lowOpNot) --  node {no} (lowOpAnd);
-	\path [line] (lowOpAnd) --  node {no} (lowOpOr);
-    \path [line] (lowOpNot) -- node {yes} (notnotA);
-    \path [line] (lowOpAnd) -- node {yes} (morgan1);
-    \path [line] (lowOpOr) -- node {yes} (morgan2);
-    \path [line] (notnotA) -| (recursive);
-	\path [line] (morgan1) -| (recursive);
-	\path [line] (morgan2) -| (recursive);
-	\path [line] (recursive) -- (return);
-	\path [line] (lowOpOr) -- node {no} (return2);
-\end{tikzpicture}
-\end{figure}
-\vfill
-\newpage
-\section{Distributivity Law Flow Chart} \label{app:distribute}
-\vfill
-\begin{figure}[h]
-\centering
-\begin{tikzpicture}[node distance = 2cm, auto]
-    % Place nodes
-    \node [initBlock] (init) {Eliminate Implications};
-    \node [block, below of=init] (sentatomic) {Is sentence atomic?};
-    \node [cloud, right of=sentatomic, node distance=6cm] (return) {return};
-    %\node [block, below of=sentatomic, node distance = 3cm] (opnot) {Operator = 'not'?};
-    \node [largerblock, below of=sentatomic, node distance = 2.5cm] (sent1) {Is sentence on the left hand side atomic?};
-    %\node [largerblock, right of=opnot, node distance = 3.5cm] (sent1-2) {Is sentence on the left hand side atomic?};
-    \node [largerblock, below of=sent1, node distance = 2.5cm] (sent2) {Is sentence on the right hand side atomic?};
-	\node [largerblock, below of=sent2, node distance = 3.5cm] (operations) {Check for outer 'or' and inner 'and'. If so apply distributivity law.};
-	\node [cloud, right of=sent1, node distance = 3.5cm] (recursive) {recursive};
-	\node [cloud, right of=sent2, node distance = 3.5cm] (recursive2) {recursive};
-	\node [cloud, right of=operations, node distance = 3.5cm] (recursive3) {recursive};
-	\node [cloud, below of=operations, node distance = 3.0cm] (return2) {return};
-    % Draw edges
-    \path [line] (init) -- (sentatomic);
-    %\path [line] (sentatomic) -- node {no} (opnot);
-    \path [line] (sentatomic) -- node {yes} (return);
-    \path [line] (sentatomic) -- node {no} (sent1);
-	%\path [line] (opnot) -- node {yes} (sent1-2);
-	%\path [line] (sent1-2) -- node {no} (recursive3);
-	%\path [line] (sent1-2) -| node  [near start]{yes} (return);
-	%\path [line] (recursive3) -- (return);    
-    \path [line] (sent1) -- node {no} (recursive);
-    \path [line] (recursive) -- (sent2);
-	\path [line] (sent2) -- node {no} (recursive2);    
-	\path [line] (recursive2) -- (operations);    
-    \path [line] (sent1) -- node {yes} (sent2);
-    \path [line] (sent2) -- node {yes} (operations);
-    \path [line] (operations) -- node {yes} (recursive3);
-    \path [line] (recursive3) -| (return);
-    
-    \path [line] (operations) -- node {no} (return2);
-\end{tikzpicture}
-\end{figure}
 \vfill  
 % biography section
 % 
