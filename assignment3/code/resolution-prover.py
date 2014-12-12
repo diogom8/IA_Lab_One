@@ -139,7 +139,6 @@ def init_resolution(KB, alpha, StepByStep, SaveToFile):
             result, output = ResolutionLoopSbS(Union, sent_number, output)
             
             if result == False or len(alpha) == 1:
-                print >>output, ('CONCLUSION: General sentence can be proven from KB\n')
                 break
             else:
                 alpha.pop()
@@ -153,6 +152,9 @@ def init_resolution(KB, alpha, StepByStep, SaveToFile):
                 return 'True'
             else:
                 alpha.pop()
+                
+    if len(alpha) == 1 and ResolutionLoop(Union) == True:
+        print >>output, ('CONCLUSION: General sentence can be proven from KB\n')
     
     # Save to file or print to terminal            
     if SaveToFile: # save output to file
@@ -163,6 +165,7 @@ def init_resolution(KB, alpha, StepByStep, SaveToFile):
         fo.close()                
     else: # print output to terminal
         print output.getvalue()
+    
     output.close()
                   
     if result == False:
