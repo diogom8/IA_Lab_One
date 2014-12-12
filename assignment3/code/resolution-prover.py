@@ -65,38 +65,41 @@ def ResolutionLoop(UNION):
                 break             
     return False
 
+
 # Resolution loop - Step by Step
-def ResolutionLoopSbS(UNION):
-    output = StringIO.StringIO()
+def ResolutionLoopSbS(UNION, sent_number, output):
+
+    print >>output, ('Union #%d:'%sent_number) , los2lol(UNION), '\n'
+    # resolution loop
     NewClauses = True
-    print >>output, 'Union:', los2lol(UNION), '\n'
     while(NewClauses):
         NewClauses = False
         #unit preference heuristic
-        print >>output, 'Apply Unit Preference Heuristic'
+        print >>output, '\tApply Unit Preference Heuristic'
         UNION.sort(key = getKey)
-        print >>output, 'Result:', los2lol(UNION), '\n'
+        print >>output, '\tResult:', los2lol(UNION), '\n'
         
         NumberOfLiterals = countLiterals(UNION)
         for i in range(NumberOfLiterals):
             for j in range(i+1,len(UNION)):
                 result = resolution(UNION[i],UNION[j])
                 if result != [UNION[i],UNION[j]]:
-                    print >>output, ("Apply Resolution - C%d + C%d" % (i+1,j+1))
+                    print >>output, ("\tApply Resolution - C%d + C%d" % (i+1,j+1))
                     if result == set([]):
-                        print >>output, 'Result: [] \n'
-                        print >>output, 'CONCLUSION: Sentence can be proven from KB\n'
+                        print >>output, '\tResult: [] \n'
+                        print >>output, ('CONCLUSION: Sentence #%d can be proven from KB\n' % sent_number)   
                         return True, output
                     else: #Result is some new conclusion
                         UNION.pop(j)
                         UNION.insert(j,result)
-                        print >>output, 'Result:', los2lol(UNION), '\n'
+                        print >>output, '\tResult:', los2lol(UNION), '\n'
                         NewClauses = True
                         break
                 
             if NewClauses:
                 break
-    print >>output, 'CONCLUSION: Sentence can\'t be proven from KB\n'             
+    print >>output, ('CONCLUSION: Sentence #%d can\'t be proven from KB\n' % sent_number)
+    print >>output, ('CONCLUSION: General sentence can\'t be proven from KB\n')
     return False, output
 
 # Count number of literals in UNION
@@ -117,8 +120,14 @@ def resolution(X,Y):
         return [X,Y]       
 
 # Initial procedures to start resolution
-def init_resolution(KB, alpha, StepByStep, SaveToFile):   
-    alpha = copy.deepcopy(alpha); 
+def init_resolution(KB, alpha, StepByStep, SaveToFile):
+    # init output buffer
+    output = StringIO.StringIO()
+    print >>output, 'Knowledge Base', los2lol(KB)
+    print >>output, 'Sentence', los2lol(alpha), '\n'
+      
+    alpha = copy.deepcopy(alpha); # necessary to do not change alpha
+    sent_number = 1;
     while alpha:
         # Compute Union
         Union = copy.deepcopy(KB)
@@ -127,24 +136,15 @@ def init_resolution(KB, alpha, StepByStep, SaveToFile):
             Union.append(set([notliteral(literal)]))       
         # Apply Resolution Step by Step
         if StepByStep:
-            result, output = ResolutionLoopSbS(Union)
+            result, output = ResolutionLoopSbS(Union, sent_number, output)
             
-            if SaveToFile: # save output to file
-                outFileName = raw_input('\nInsert filename: ')        
-                fo = open(outFileName+'.txt', "w")                
-                #Write to file
-                fo.write(output.getvalue())
-                fo.close()                
-            else: # print output to terminal
-                print output.getvalue()
-            output.close()
-            
-            if result == False:
-                return 'False'   
-            elif len(alpha) == 1:
-                return 'True'
+            if result == False or len(alpha) == 1:
+                print >>output, ('CONCLUSION: General sentence can be proven from KB\n')
+                break
             else:
                 alpha.pop()
+                sent_number = sent_number + 1 # increment sentence number
+            
         # Apply Resolution
         else:
             if ResolutionLoop(Union) == False:
@@ -153,6 +153,22 @@ def init_resolution(KB, alpha, StepByStep, SaveToFile):
                 return 'True'
             else:
                 alpha.pop()
+    
+    # Save to file or print to terminal            
+    if SaveToFile: # save output to file
+        outFileName = raw_input('\nInsert filename: ')        
+        fo = open(outFileName+'.txt', "w")                
+        #Write to file
+        fo.write(output.getvalue())
+        fo.close()                
+    else: # print output to terminal
+        print output.getvalue()
+    output.close()
+                  
+    if result == False:
+        return 'False'   
+    elif len(alpha) == 1:
+        return 'True'
 
 # Convert list of sets to list of lists
 def los2lol(SetFormat):
