@@ -18,7 +18,7 @@
   \renewcommand\thefigure{\Alph{section}\arabic{figure}}
   \renewcommand\thetable{\Alph{section}\arabic{table}}
 }
-\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+\newcommand{\HRule}{\rule{\linewidth}{0.2mm}}
 
 % *** CITATION PACKAGES ***
 %
@@ -93,7 +93,7 @@ pdfkeywords={Computer Society, IEEEtran, journal, LaTeX, paper,
 % in the abstract or keywords.
 \IEEEtitleabstractindextext{%
 \begin{abstract}
-In this assignment, a program was made in python to prove propositional logic theorems based on the resolution principle.
+In this assignment, a program was developed in python to prove propositional logic theorems based on the resolution principle. After assignment \#2, this program completes the necessary requirements for a complete resolution prover. The achieved program proved to perform correctly for all the trials it was submitted.
 \end{abstract}
 
 % Note that keywords are not normally used for peerreview papers.
@@ -122,7 +122,7 @@ resolution theorem, propositional logic, clausal normal form, CNF, knowledge bas
 
 \section{Introduction}
 
-\IEEEPARstart{T}{he} aim of the present short report is to describe the results obtained for the Assignment \#3 which aimed the creation of a resolution-based theorem prover for propositional logic. This assignment is a continuation of the previous one, where a Clausal Normal Form (CNF) converter was made. This way, it is assumed that the given knowledge base and sentence to prove is already in the CNF form.
+\IEEEPARstart{T}{he} aim of the present short report is to describe the results obtained for the Assignment \#3 which aimed the creation of a resolution-based theorem prover for propositional logic. This assignment is a continuation of the previous one, where a Clausal Normal Form (CNF) converter was made. This way, the tools created in the previous assignment are used for the required conversion to CNF of the knowledge base and sentence to prove.
 
 This report will start with the discussion of the resolution theorem prover, particularly its algorithm and implementation. After that, there will be some complementary remarks and conclusions.
 
@@ -135,20 +135,21 @@ The code was made using \textsc{Python} v2.7 released for \textsc{Unix} operatin
 \section{Resolution Theorem Prover}
 The resolution theorem enables to prove propositional logical sentences given an assumed knowledge base.  In other words, it allows to conclude whether a propositional formula is satisfiable or unsatisfiable under that knowledge base. The main idea behind this technique of logical inference is to prove the unsatisfiability of the negated sentence which one aims to prove. This form of theorem proving is generally referred as refutation.\\
 The implementation of the theorem prover in this assignment followed the algorithm presented as a block diagram in \ref{app:init_resolution}. Initially, the algorithm uses the CNF converter to generate a list of disjunctions for both the knowledge base (KB) and sentence to prove ($\alpha$). After that step, the reasoning was to investigate the validity of each clause in $\alpha$ independently. While each clause provides a \texttt{True} outcome, the routine keeps evaluating the following clauses until a point where one clause is not satisfied by the knowledge base or there are no more clauses to evaluate. The result obtained would be then \texttt{False} or \texttt{True}, respectively. This algorithm proved to be efficient observing that when a \texttt{False} is detected, the routine stops since the outcome of any other clause is irrelevant for the final result.\\
-As suggested in the assignment description, the unit preference heuristic was applied. With this strategy the algorithm gives preference to resolutions where at least one of the clauses is a single literal. This way it is always ensured that for any conclusive resolution the outcome is always a shorter clause. This strategy clearly helps to reach a conclusion faster, since our algorithm seeks for resolutions where a literal and its negated counterpart are involved, such that a final conclusion about the clause to prove can be arisen. It is also important to note that the application of this heuristic does not fail because with the inclusion of the clause to prove $\alpha_i$ in the knowledge base (see \ref{app:init_resolution}), it is guaranteed the presence of unit clauses even if KB does not contain any.
-In order to better understand the application of the unit preference heuristic and the reasoning behind the function \texttt{ResolutionLoop(Union)}, its general algorithm is presented here:\\
+As suggested in the assignment description, the unit preference heuristic was applied. With this strategy the algorithm only applies resolutions where at least one of the clauses is a single literal. This strategy clearly helps to reach a conclusion faster, since our algorithm seeks for resolutions where a literal and its negated counterpart are involved, such that a final conclusion about the clause to prove can be arisen. It is also important to note that the application of this heuristic does not fail because with the inclusion of the clause to prove $\alpha_i$ in the knowledge base (see \ref{app:init_resolution}), it is guaranteed the presence of unit clauses even if KB does not contain any.
+In order to better understand the application of the unit preference heuristic and the reasoning behind, the general algorithm of the function \texttt{ResolutionLoop(Union)} algorithm is presented here:\\
 
 \small
 \noindent\texttt{loop until no new clauses result from any pair of clauses in Union:
 \begin{enumerate}
-\item for each pair of clauses $C_i$, $C_j$ in Union
+\item for each pair of clauses $C_i$ (single literal), $C_j$(single/multi literal) in Union 
 \item result = Resolution($C_i$,$C_j$)
-\item if result contains the empty clause, return True
-\item elseif result is a shorter clause, add result to Union and pop $C_j$
+\item if result contains the empty clause, then return True
+\item elseif result is a shorter clause, then add result to Union and pop $C_j$
 \end{enumerate}
 }
 \normalsize
-Note that in step \texttt{4)}, the \texttt{pop} is possible since in our algorithm the \texttt{$C_i$} clause is always a unit clause due to the heuristic applied. This means that the result if conclusive (i.e. a shorter clause) is a simplification of \texttt{$C_j$} and therefore the latter can be withdrawn from \texttt{Union}. \todo{better explain resolution}
+Note that in step \texttt{4)}, the \texttt{pop} is possible since in our algorithm clause \texttt{$C_i$} is always a unit clause due to the heuristic applied. This means that the result if conclusive (i.e. a shorter clause) is a simplification of \texttt{$C_j$} and therefore the latter can be withdrawn from \texttt{Union}.\\
+It should also be pointed out that \texttt{Resolution($C_i,C_j$)} returns the outcome by the application of the resolution rule in case negated $C_i$ is a subset of $C_j$. Otherwise it returns both the original clauses meaning that no shorter clause was attained.
 
 
 
